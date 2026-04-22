@@ -15,7 +15,9 @@ export default function HomePage() {
 
       <main className="home-main-box">
         <section className="home-map-area">
-          <Link to={"/maps"}>지도</Link>
+          <Link to="/maps" className="home-map-link-card">
+            헬스장 찾기
+          </Link>
         </section>
 
         <section className="home-menu-area">

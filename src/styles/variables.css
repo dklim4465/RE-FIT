@@ -1,5 +1,19 @@
 :root {
-  --border-width: 4px;
-  --box-border: var(--border-width) solid #111;
-  --page-padding: 24px;
+  --page-padding: clamp(18px, 2vw, 30px);
+  --ink-strong: #111218;
+  --ink-base: #1b1e2c;
+  --ink-muted: #676c86;
+  --accent: #7c87ff;
+  --accent-strong: #626df4;
+  --accent-soft: #dfe3ff;
+  --accent-wash: rgba(124, 135, 255, 0.12);
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-strong: #f6f7ff;
+  --surface-soft: #eef1ff;
+  --border-soft: rgba(124, 135, 255, 0.18);
+  --shadow-soft: 0 18px 50px rgba(64, 72, 138, 0.12);
+  --shadow-strong: 0 28px 80px rgba(64, 72, 138, 0.18);
+  --panel-radius: 30px;
+  --pill-radius: 999px;
+  --box-border: 1px solid var(--border-soft);
 }
