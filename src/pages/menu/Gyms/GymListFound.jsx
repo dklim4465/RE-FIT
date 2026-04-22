@@ -1,61 +1,70 @@
-import React, { useReducer, useRef, useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import GymItem from "./GymItem";
-import GymListPage from "./GymListPage";
+import {
+  calculateDistanceKm,
+  getReferenceLocation,
+} from "../../../utils/locationStorage";
 
-function gymReducer(state, action) {
-  switch (action.type) {
-    case "INIT_DATA":
-      return action.data;
-    default:
-      return state;
-  }
+function createGymSeedData() {
+  const base = getReferenceLocation();
+
+  return Array.from({ length: 500 }, (_, index) => {
+    const ring = Math.floor(index / 25) + 1;
+    const angle = ((index * 37) % 360) * (Math.PI / 180);
+    const latOffset = Math.cos(angle) * 0.0032 * ring;
+    const lngOffset = Math.sin(angle) * 0.0041 * ring;
+    const lat = base.lat + latOffset;
+    const lng = base.lng + lngOffset;
+    const distance = calculateDistanceKm(base, { lat, lng });
+
+    return {
+      id: index + 1,
+      name: `RE:FIT 헬스장 ${index + 1}호점`,
+      lat,
+      lng,
+      distance: Number(distance.toFixed(1)),
+      price: Math.floor(Math.random() * 51 + 20) * 1000,
+      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
+    };
+  }).sort((a, b) => a.distance - b.distance);
 }
 
 const GymListFound = () => {
-  const [rawData, dispatch] = useReducer(gymReducer, []);
+  const [rawData, setRawData] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [page, setPage] = useState(1);
   const observerTarget = useRef(null);
+  const referenceLocation = useMemo(() => getReferenceLocation(), []);
 
-  // 1. 초기 데이터 생성
   useEffect(() => {
-    const data = Array.from({ length: 500 }, (_, i) => ({
-      id: i + 1,
-      name: `RE:FIT 헬스장 ${i + 1}호점`,
-      distance: parseFloat((Math.random() * 4.9 + 0.1).toFixed(1)),
-      price: Math.floor(Math.random() * 51 + 20) * 1000,
-      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
-    }));
-    dispatch({ type: "INIT_DATA", data });
+    setRawData(createGymSeedData());
   }, []);
 
   const displayedGyms = rawData.slice(0, page * 10);
   const hasMore = displayedGyms.length < rawData.length;
 
-  // 2. 무한 스크롤 로직 의존성 배열 고정 , Cleanup
   useEffect(() => {
-    if (!observerTarget.current || !hasMore) return;
+    if (!observerTarget.current || !hasMore) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          console.log(" 다음 페이지로...");
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1 } //
+      { threshold: 0.1 }
     );
 
     observer.observe(observerTarget.current);
 
     return () => observer.disconnect();
+  }, [hasMore]);
 
-    //  [hasMore, setPage] 구성을 유지하여 에러 방지!
-  }, [hasMore, setPage]);
-
-  // 3. 상세 페이지 화면 (조건부 렌더링)
   if (selectedId) {
-    const selectedGym = rawData.find((g) => g.id === selectedId);
+    const selectedGym = rawData.find((gym) => gym.id === selectedId);
+
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
         <div
@@ -70,7 +79,7 @@ const GymListFound = () => {
             📍 거리: {selectedGym?.distance}km | 💰 가격:{" "}
             {selectedGym?.price.toLocaleString()}원
           </p>
-          <p>여기는 {selectedId}호점의 상세 정보 페이지입니다.</p>
+          <p>선택한 기준 위치에서 가까운 순으로 계산된 상세 정보입니다.</p>
           <button
             onClick={() => setSelectedId(null)}
             style={{ marginBottom: "20px" }}
@@ -82,12 +91,14 @@ const GymListFound = () => {
     );
   }
 
-  // 4. 목록 화면
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>🛡️ RE:FIT 헬스장 검색 </h2>
+      <h2 style={{ textAlign: "center" }}>RE:FIT 헬스장 검색</h2>
+      <p style={{ textAlign: "center", color: "#4b5563" }}>
+        기준 위치: 위도 {referenceLocation.lat.toFixed(4)} / 경도{" "}
+        {referenceLocation.lng.toFixed(4)}
+      </p>
 
-      {/* 목록 박스 */}
       <div
         style={{
           border: "1px solid #ddd",
@@ -100,7 +111,6 @@ const GymListFound = () => {
         ))}
       </div>
 
-      {/* 감시 대상 (박스 밖으로 빼서 브라우저가 잘 보이게 함) */}
       <div
         ref={observerTarget}
         style={{
@@ -115,8 +125,8 @@ const GymListFound = () => {
         }}
       >
         {hasMore
-          ? "🔄 더 많은 헬스장 로딩 중..."
-          : "✅ 모든 헬스장을 확인했습니다."}
+          ? "더 많은 헬스장 로딩 중..."
+          : "모든 헬스장을 확인했습니다."}
       </div>
     </div>
   );
