@@ -3,6 +3,8 @@ import { Outlet } from "react-router-dom";
 
 const OLLAMA_URL = "http://localhost:11434/api/generate";
 const STORAGE_KEY = "ai-diet-plans";
+const KOREAN_ONLY_NOTICE =
+  "응답은 반드시 자연스러운 한국어로만 작성하세요. 영어, 로마자, 외래어 표기를 최대한 사용하지 말고, 필요한 경우 한국어 표현으로 바꿔 쓰세요.";
 
 export default function DietListPage() {
   const [goal, setGoal] = useState("체중 감량");
@@ -39,6 +41,12 @@ export default function DietListPage() {
 - 목표: ${goal}
 - 선호 또는 보유 재료: ${ingredientText}
 
+중요한 작성 조건:
+- 답변은 한국어만 사용해줘.
+- 영어, 로마자, 외국어 표현은 쓰지 말아줘.
+- 음식 이름도 가능한 한 모두 자연스러운 한국어로 적어줘.
+- 설명은 이해하기 쉽게 짧고 분명하게 작성해줘.
+
 아래 형식으로 한국어로 작성해줘.
 1. 아침
 2. 점심
@@ -62,10 +70,11 @@ export default function DietListPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "llama3",
+          system: KOREAN_ONLY_NOTICE,
           prompt: nextPrompt,
           stream: false,
           options: {
-            temperature: 0.7,
+            temperature: 0.4,
             num_predict: 800,
           },
         }),
@@ -118,7 +127,6 @@ export default function DietListPage() {
       updatedAt: new Date().toLocaleString("ko-KR"),
     };
 
-    <pre style={{ whiteSpace: "pre-wrap" }}>{prompt}</pre>;
     const nextPlans = editId
       ? dietPlans.map((plan) => (plan.id === editId ? dietData : plan))
       : [dietData, ...dietPlans];
@@ -176,9 +184,6 @@ export default function DietListPage() {
           />
         </label>
 
-        <button onClick={handleGenerateDiet} disabled={isLoading}>
-          {isLoading ? "식단생성중..." : "식단 생성"}
-        </button>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <button onClick={handleGenerateDiet} disabled={isLoading}>
             {isLoading ? "식단 생성 중..." : "식단 생성"}
