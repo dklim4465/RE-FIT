@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../store/AuthContext";
+import BrandLogo from "./BrandLogo";
 
 export default function ServiceHeader() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -12,7 +13,7 @@ export default function ServiceHeader() {
           className="box service-login-box"
           onClick={logout}
         >
-          로그아웃
+          임대한 회원님 | 로그아웃
         </button>
       ) : (
         <Link to="/login" className="box service-login-box">
@@ -21,7 +22,7 @@ export default function ServiceHeader() {
       )}
 
       <Link to="/" className="box service-logo-box">
-        RE : FIT
+        <BrandLogo />
       </Link>
 
       <button type="button" className="box service-paid-button">

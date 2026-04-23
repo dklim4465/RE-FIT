@@ -24,9 +24,7 @@ function loadNaverMapSdk() {
   }
 
   if (!NAVER_MAP_KEY_ID) {
-    return Promise.reject(
-      new Error("네이버 지도 키가 설정되지 않았습니다.")
-    );
+    return Promise.reject(new Error("네이버 지도 키가 설정되지 않았습니다."));
   }
 
   const existingScript = document.getElementById(NAVER_MAP_SCRIPT_ID);
@@ -59,7 +57,9 @@ function loadNaverMapSdk() {
         return;
       }
 
-      reject(new Error("네이버 지도 SDK는 로드되었지만 maps 객체를 찾지 못했습니다."));
+      reject(
+        new Error("네이버 지도 SDK는 로드되었지만 maps 객체를 찾지 못했습니다.")
+      );
     };
 
     script.onerror = () => {
@@ -282,7 +282,9 @@ export default function NaverMap() {
       </form>
       <div className="naver-map-board">
         {!isMapReady && (
-          <div className="naver-map-placeholder">지도를 불러오고 있습니다...</div>
+          <div className="naver-map-placeholder">
+            지도를 불러오고 있습니다...
+          </div>
         )}
         <div
           ref={mapRef}
