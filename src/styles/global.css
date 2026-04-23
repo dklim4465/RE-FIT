@@ -134,12 +134,45 @@ button {
   backdrop-filter: blur(18px);
 }
 
-.home-header {
+.home-header,
+.service-header {
+  position: sticky;
+  top: 12px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 40px 20px;
+  padding: 20px 20px;
+  border: 1px solid transparent;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+
+  transition:
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    opacity 0.24s ease,
+}
+
+.home-header.is-background-visible,
+.service-header.is-background-visible {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(124, 135, 255, 0.14);
+  box-shadow: var(--shadow-soft);
+  opacity: 1;
+}
+
+.home-header.is-background-hidden,
+.service-header.is-background-hidden {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0.88;
+}
+
+.home-header.is-floating,
+.service-header.is-floating {
+  padding-block: 20px;
 }
 
 .home-header-left,
@@ -620,15 +653,6 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
-.service-ad-box strong {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--ink-strong);
-  font-size: 0.9rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .route-loading {
   min-height: 100vh;
   display: flex;
@@ -794,6 +818,16 @@ button {
   padding: 20px;
 }
 
+.naver-map-error {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 240, 240, 0.9);
+  color: #b42318;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .naver-map-text-box {
   min-height: 76px;
   border-radius: 24px;
@@ -845,7 +879,7 @@ button {
 .naver-map-board {
   position: relative;
   margin-top: 14px;
-  max-height: 700px;
+  max-height: 500px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: inset 0 0 0 1px rgba(124, 135, 255, 0.12);
@@ -886,6 +920,102 @@ button {
   font-weight: 800;
   text-align: center;
   z-index: 1;
+}
+
+.nearby-gyms-section {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.nearby-gyms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nearby-gyms-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.nearby-gyms-helper {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.nearby-gyms-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nearby-gyms-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.nearby-gyms-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(79, 70, 229, 0.22);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.nearby-gyms-item:focus-visible {
+  outline: 0;
+  border-color: rgba(79, 70, 229, 0.42);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.nearby-gyms-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.nearby-gyms-name {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.nearby-gyms-distance {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.nearby-gyms-address {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.nearby-gyms-empty {
+  margin: 0;
+  padding: 18px 16px;
+  border-radius: 16px;
+  background-color: #f8fafc;
+  color: #64748b;
+  text-align: center;
 }
 
 .ai-result {
@@ -1110,6 +1240,12 @@ button {
   .home-menu-grid,
   .naver-map-search {
     grid-template-columns: 1fr;
+  }
+
+  .nearby-gyms-header,
+  .nearby-gyms-item-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .home-hero-copy,
