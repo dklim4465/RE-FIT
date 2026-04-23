@@ -1,133 +1,130 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useListPage } from "../../../hooks/gyms/useListPage";
 import GymItem from "./GymItem";
-import {
-  calculateDistanceKm,
-  getReferenceLocation,
-} from "../../../utils/locationStorage";
 
-function createGymSeedData() {
-  const base = getReferenceLocation();
+const GymListFound = ({ gyms }) => {
+  const navigate = useNavigate();
 
-  return Array.from({ length: 500 }, (_, index) => {
-    const ring = Math.floor(index / 25) + 1;
-    const angle = ((index * 37) % 360) * (Math.PI / 180);
-    const latOffset = Math.cos(angle) * 0.0032 * ring;
-    const lngOffset = Math.sin(angle) * 0.0041 * ring;
-    const lat = base.lat + latOffset;
-    const lng = base.lng + lngOffset;
-    const distance = calculateDistanceKm(base, { lat, lng });
-
-    return {
-      id: index + 1,
-      name: `RE:FIT 헬스장 ${index + 1}호점`,
-      lat,
-      lng,
-      distance: Number(distance.toFixed(1)),
-      price: Math.floor(Math.random() * 51 + 20) * 1000,
-      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
-    };
-  }).sort((a, b) => a.distance - b.distance);
-}
-
-const GymListFound = () => {
-  const [rawData, setRawData] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [page, setPage] = useState(1);
-  const observerTarget = useRef(null);
-  const referenceLocation = useMemo(() => getReferenceLocation(), []);
-
-  useEffect(() => {
-    setRawData(createGymSeedData());
-  }, []);
-
-  const displayedGyms = rawData.slice(0, page * 10);
-  const hasMore = displayedGyms.length < rawData.length;
-
-  useEffect(() => {
-    if (!observerTarget.current || !hasMore) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(observerTarget.current);
-
-    return () => observer.disconnect();
-  }, [hasMore]);
-
-  if (selectedId) {
-    const selectedGym = rawData.find((gym) => gym.id === selectedId);
-
-    return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <div
-          style={{
-            border: "1px solid #ddd",
-            padding: "30px",
-            borderRadius: "15px",
-          }}
-        >
-          <h2>{selectedGym?.name}</h2>
-          <p>
-            📍 거리: {selectedGym?.distance}km | 💰 가격:{" "}
-            {selectedGym?.price.toLocaleString()}원
-          </p>
-          <p>선택한 기준 위치에서 가까운 순으로 계산된 상세 정보입니다.</p>
-          <button
-            onClick={() => setSelectedId(null)}
-            style={{ marginBottom: "20px" }}
-          >
-            ← 목록으로 돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const {
+    inputText,
+    setInputText,
+    filteredGyms,
+    sortType,
+    selectedRegion,
+    setPage,
+    hasMore,
+    handleSearch,
+    updateParams,
+  } = useListPage(gyms);
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>RE:FIT 헬스장 검색</h2>
-      <p style={{ textAlign: "center", color: "#4b5563" }}>
-        기준 위치: 위도 {referenceLocation.lat.toFixed(4)} / 경도{" "}
-        {referenceLocation.lng.toFixed(4)}
-      </p>
-
-      <div
+    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
+      <h2
         style={{
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          overflow: "hidden",
-        }}
-      >
-        {displayedGyms.map((gym) => (
-          <GymItem key={gym.id} gym={gym} onSelect={setSelectedId} />
-        ))}
-      </div>
-
-      <div
-        ref={observerTarget}
-        style={{
-          height: "80px",
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
-          background: "#f9f9f9",
-          marginTop: "10px",
-          borderRadius: "10px",
-          fontWeight: "bold",
+          justifyContent: "center",
+          gap: "8px",
         }}
       >
-        {hasMore
-          ? "더 많은 헬스장 로딩 중..."
-          : "모든 헬스장을 확인했습니다."}
+        📍 헬스장 찾기
+      </h2>
+
+      {/* 검색창 */}
+      <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+        <input
+          type="text"
+          placeholder="검색어를 입력하세요"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid #ddd",
+            boxSizing: "border-box",
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleSearch}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "8px",
+            border: "1px solid #ddd",
+            backgroundColor: "#fff",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          검색
+        </button>
       </div>
+
+      {/* 필터 선택 */}
+      <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+        <select
+          value={selectedRegion}
+          onChange={(e) => updateParams({ region: e.target.value })}
+          style={{ padding: "8px", borderRadius: "4px", flex: 1 }}
+        >
+          <option value="전체">전체 지역</option>
+          <option value="용산구">용산구</option>
+          <option value="성동구">성동구</option>
+        </select>
+
+        <select
+          value={sortType}
+          onChange={(e) => updateParams({ sort: e.target.value })}
+          style={{ padding: "8px", borderRadius: "4px", flex: 1 }}
+        >
+          <option value="distance">거리순</option>
+          <option value="ganada">가나다순</option>
+        </select>
+      </div>
+
+      {/* 리스트 출력 */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        {filteredGyms.length > 0 ? (
+          filteredGyms.map((gym) => (
+            <div
+              key={gym.id}
+              onClick={() => navigate(`/gym/${gym.id}`, { state: { gym } })}
+              style={{ cursor: "pointer" }}
+            >
+              <GymItem gym={gym} />
+            </div>
+          ))
+        ) : (
+          <p style={{ textAlign: "center", color: "#999", padding: "40px 0" }}>
+            검색 결과가 없습니다.
+          </p>
+        )}
+      </div>
+
+      {/* 더보기 버튼 */}
+      {hasMore && (
+        <button
+          onClick={() => setPage((prev) => prev + 1)}
+          style={{
+            width: "100%",
+            marginTop: "20px",
+            padding: "12px",
+            cursor: "pointer",
+            backgroundColor: "#f8f9fa",
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+          }}
+        >
+          결과 더 보기
+        </button>
+      )}
     </div>
   );
 };
