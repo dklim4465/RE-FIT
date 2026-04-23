@@ -12,7 +12,7 @@ export default function RoutineList() {
       </div>
 
       {routines.length === 0 ? (
-        <p>아직 저장된 루틴이 없습니다.</p>
+        <p>아직 저장한 루틴이 없습니다.</p>
       ) : (
         <div className="routine-grid">
           {routines.map((routine) => (

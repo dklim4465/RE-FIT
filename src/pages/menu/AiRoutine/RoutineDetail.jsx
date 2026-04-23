@@ -34,7 +34,7 @@ export default function RoutineDetail() {
 
       <div className="routine-card">
         <p>목표: {routine.goal}</p>
-        <p>난이도: {routine.level}</p>
+        <p>수준: {routine.level}</p>
         <p>운동 빈도: {routine.days}</p>
         <p>운동 시간: {routine.duration}</p>
         <p>장비: {routine.equipment}</p>

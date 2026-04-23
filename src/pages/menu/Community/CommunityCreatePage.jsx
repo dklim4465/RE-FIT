@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const STORAGE_KEY = "community-posts";
@@ -37,9 +36,9 @@ export default function CommunityCreatePage() {
     }
   }, [currentPage, totalPages]);
 
-  const savePosts = (newPosts) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPosts));
-    setPosts(newPosts);
+  const savePosts = (nextPosts) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPosts));
+    setPosts(nextPosts);
   };
 
   const resetForm = () => {
@@ -52,16 +51,16 @@ export default function CommunityCreatePage() {
     if (!title.trim() || !content.trim()) return;
 
     const now = new Date().toLocaleDateString("ko-KR");
-    let newPosts;
+    let nextPosts;
 
     if (editId) {
-      newPosts = posts.map((post) =>
+      nextPosts = posts.map((post) =>
         post.id === editId
           ? { ...post, title: title.trim(), content: content.trim() }
           : post
       );
     } else {
-      newPosts = [
+      nextPosts = [
         {
           id: Date.now(),
           title: title.trim(),
@@ -72,14 +71,13 @@ export default function CommunityCreatePage() {
       ];
     }
 
-    savePosts(newPosts);
+    savePosts(nextPosts);
     resetForm();
     setCurrentPage(1);
   };
 
   const handleDelete = (id) => {
-    const filteredPosts = posts.filter((post) => post.id !== id);
-    savePosts(filteredPosts);
+    savePosts(posts.filter((post) => post.id !== id));
   };
 
   const handleEdit = (post) => {
