@@ -6,44 +6,70 @@ export default function CommunityCreatePage() {
   const [content, setContent] = useState("");
   const [editId, setEditId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 5;
+  const postsPerPage = 10;
 
-  const indexOfLast = currentPage * postsPerPage;
-  const indexOfFirst = indexOfLast - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirst, indexOfLast);
+  const [loading, setLoading] = useState(true);
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const currentPosts = posts.slice(
+    (currentPage - 1) * postsPerPage,
+    currentPage * postsPerPage
+  );
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("posts")) || [];
-    setPosts(saved);
+    try {
+      const result = localStorage.getItem("community-posts");
+      if (result) setPosts(JSON.parse(result));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("posts", JSON.stringify(posts));
-  }, [posts]);
-  const handleSubmit = () => {
-    if (!title || !content) return;
+  const save = (newPosts) => {
+    localStorage.setItem("community-posts", JSON.stringify(newPosts));
+    setPosts(newPosts);
+  };
 
+  const handleSubmit = () => {
+    if (!title.trim() || !content.trim()) return;
+    const now = new Date().toLocaleDateString("ko-KR");
+    let newPosts;
     if (editId) {
-      setPosts(
-        posts.map((p) => (p.id === editId ? { ...p, title, content } : p))
+      newPosts = posts.map((p) =>
+        p.id === editId ? { ...p, title, content } : p
       );
+      setEditId(null);
     } else {
-      setPosts([...posts, { id: Date.now(), title, content }]);
+      newPosts = [{ id: Date.now(), title, content, date: now }, ...posts];
     }
+
+    save(newPosts);
     setTitle("");
     setContent("");
-    setEditId(null);
+    setCurrentPage(1);
   };
-  const handleDelete = (id) => {
-    const filtered = posts.filter((p) => p.id !== id);
-    setPosts(filtered);
-  };
-
   const handleEdit = (post) => {
     setTitle(post.title);
     setContent(post.content);
     setEditId(post.id);
   };
+
+  const handleDelete = async (id) => {
+    save(posts.filter((p) => p.id !== id));
+  };
+
+  const handleCancel = () => {
+    setEditId(null);
+    setTitle("");
+    setContent("");
+  };
+
+  if (loading)
+    return (
+      <div style={{ textAlign: "center", padding: 40 }}>불러오는 중...</div>
+    );
+
   return (
     <div style={{ width: "600px", margin: "0 auto" }}>
       <h2>운동 커뮤니티 게시판</h2>
@@ -72,17 +98,17 @@ export default function CommunityCreatePage() {
         <div key={post.id}>
           <h3>{post.title}</h3>
           <p>{post.content}</p>
+
+          <button onClick={() => handleEdit(post)}>수정</button>
+          <button onClick={() => handleDelete(post.id)}>삭제</button>
         </div>
       ))}
       <div>
-        {Array.from(
-          { length: Math.ceil(posts.length / postsPerPage) },
-          (_, i) => (
-            <button key={i} onClick={() => setCurrentPage(i + 1)}>
-              {i + 1}
-            </button>
-          )
-        )}
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button key={i} onClick={() => setCurrentPage(i + 1)}>
+            {i + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
