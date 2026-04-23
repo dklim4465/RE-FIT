@@ -6,29 +6,33 @@ import {
 } from "../../utils/locationStorage";
 
 const NAVER_MAP_SCRIPT_ID = "naver-map-sdk";
+//key_id일지 client_id일지 모르기 때문에 둘다 받기
 const NAVER_MAP_KEY_ID =
   import.meta.env.VITE_NAVER_MAP_KEY_ID ||
   import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
 
+//여긴 지도 출력
 function hasNaverMapSdk() {
   return Boolean(window.naver?.maps);
 }
-
+// 주소 받아오는 함수
 function hasNaverGeocoder() {
   return Boolean(window.naver?.maps?.Service);
 }
-
+//값을 안받아오면 애초에 실행이 안되게 하기
 function loadNaverMapSdk() {
   if (hasNaverMapSdk()) {
     return Promise.resolve(window.naver.maps);
   }
-
+  //그래서 API키 없으면 키없다고
   if (!NAVER_MAP_KEY_ID) {
     return Promise.reject(new Error("네이버 지도 키가 설정되지 않았습니다."));
   }
 
+  //여기서부터 값이 있으면 실행되는 부분
   const existingScript = document.getElementById(NAVER_MAP_SCRIPT_ID);
 
+  //지도를 비동기로 불러오기
   if (existingScript) {
     if (hasNaverMapSdk()) {
       return Promise.resolve(window.naver.maps);
@@ -37,6 +41,7 @@ function loadNaverMapSdk() {
     existingScript.remove();
   }
 
+  //API키 불러오기 실패하면
   return new Promise((resolve, reject) => {
     window.navermap_authFailure = () => {
       reject(
@@ -50,18 +55,20 @@ function loadNaverMapSdk() {
     script.id = NAVER_MAP_SCRIPT_ID;
     script.async = true;
     script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_KEY_ID}&submodules=geocoder`;
+    //API키 실제로 받는곳
 
+    //문제 없이 진행이 되면 onload를 실행
     script.onload = () => {
       if (hasNaverMapSdk()) {
         resolve(window.naver.maps);
         return;
       }
-
+      // 그 외 에러
       reject(
         new Error("네이버 지도 SDK는 로드되었지만 maps 객체를 찾지 못했습니다.")
       );
     };
-
+    // 그 외 에러
     script.onerror = () => {
       reject(new Error("네이버 지도 SDK 스크립트 로드에 실패했습니다."));
     };
@@ -70,14 +77,17 @@ function loadNaverMapSdk() {
   });
 }
 
+//주소를 받아오는 곳
 function geocodeAddress(query) {
   return new Promise((resolve, reject) => {
+    //여기도 값 없으면 실행 바로 멈추게
     if (!hasNaverGeocoder()) {
       reject(new Error("주소 검색 모듈이 준비되지 않았습니다."));
       return;
     }
 
     window.naver.maps.Service.geocode({ query }, (status, response) => {
+      //여기도 실패했을떄
       if (status !== window.naver.maps.Service.Status.OK) {
         reject(new Error("주소 검색에 실패했습니다."));
         return;
@@ -105,10 +115,12 @@ export default function NaverMap() {
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [isGeocoderReady, setIsGeocoderReady] = useState(false);
 
+  //3항 연산자 지도 준비되면 앞에 아님 뒤에 출력
   const statusMessage = isMapReady
     ? error || "지도를 표시했습니다."
     : error || "지도를 불러오고 있습니다...";
 
+  //이거 찍는 기능
   const moveToSelectedLocation = (location, message) => {
     if (!window.naver?.maps || !mapInstanceRef.current || !markerRef.current) {
       return;
@@ -136,7 +148,7 @@ export default function NaverMap() {
         }
 
         setIsGeocoderReady(hasNaverGeocoder());
-
+        // 아래 두개는 찍었을때 나오는 주소값 x, y
         let lat = DEFAULT_MAP_CENTER.lat;
         let lng = DEFAULT_MAP_CENTER.lng;
         let message =
@@ -166,10 +178,14 @@ export default function NaverMap() {
         mapInstanceRef.current = map;
         markerRef.current = marker;
 
+        //클릭해서 좌표설정관련
         window.naver.maps.Event.addListener(map, "click", (event) => {
           const clickedPosition = event.coord;
           const clickedLat = clickedPosition.lat();
           const clickedLng = clickedPosition.lng();
+          const lat = Number(address.y);
+          const lng = Number(address.x);
+          const label = address.roadAddress || address.jibunAddress || query;
           const confirmed = window.confirm(
             "이 위치를 현재 위치로 설정하시겠습니까?"
           );
@@ -183,8 +199,9 @@ export default function NaverMap() {
               lat: clickedLat,
               lng: clickedLng,
               source: "manual",
+              address: "label",
             },
-            "선택한 위치를 현재 위치로 설정했습니다."
+            `현재 위치 ${label}`
           );
         });
 
@@ -192,6 +209,7 @@ export default function NaverMap() {
           setIsMapReady(true);
           setError(message);
         }
+        //아래로도 에러 발생시 안전장치
       } catch (sdkError) {
         console.error("네이버 지도 SDK가 준비되지 않았습니다.", sdkError);
 
@@ -234,7 +252,7 @@ export default function NaverMap() {
     }
 
     setIsSearchingAddress(true);
-
+    //이 아래로는 검색해서 찾는 기능
     try {
       const address = await geocodeAddress(query);
       const lat = Number(address.y);
@@ -263,6 +281,7 @@ export default function NaverMap() {
     }
   };
 
+  //이 아래로는 실제로 출력되는 부분
   return (
     <section className="naver-map-layout">
       <div className="naver-map-text-box">{statusMessage}</div>
