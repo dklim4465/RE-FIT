@@ -13,10 +13,10 @@ export default function LoginPage() {
 
   const redirectPath = location.state?.from || "/";
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const result = login({
+    const result = await login({
       name,
       password,
     });

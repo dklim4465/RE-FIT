@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import RoutineContent from "../../../components/routines/RoutineContent";
 import { useAiRoutine } from "../../../hooks/routines/useAiRoutine";
 
 export default function RoutineForm() {
@@ -104,8 +105,12 @@ export default function RoutineForm() {
 
       {isVisible && (
         <div className="ai-result">
-          <pre>{content}</pre>
-          {!isLoading && <button onClick={handleSave}>루틴 저장</button>}
+          <RoutineContent content={content} isLoading={isLoading} />
+          {!isLoading && content && (
+            <div className="ai-result-actions">
+              <button onClick={handleSave}>루틴 저장</button>
+            </div>
+          )}
         </div>
       )}
     </div>
