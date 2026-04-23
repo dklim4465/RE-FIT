@@ -1,24 +1,32 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "../store/AuthContext";
-import ServiceLayout from "../layouts/ServiceLayout";
-import AuthLayout from "../layouts/AuthLayout";
-import HomePage from "../pages/Home/HomePage";
-import LoginPage from "../pages/Login/LoginPage";
-import SignupPage from "../pages/Signup/SignupPage";
-import GymListPage from "../pages/menu/Gyms/GymListPage";
-import AiRoutinePage from "../pages/menu/AiRoutine/AiRoutinePage";
-import CalendarPage from "../pages/menu/Calendar/CalendarPage";
-import CommunityListPage from "../pages/menu/Community/CommunityListPage";
-import MyPage from "../pages/menu/MyPage/MyPage";
-import NotFoundPage from "../pages/menu/NotFound/NotFoundPage";
-import DietListPage from "../pages/menu/Diet/DietListPage";
-import GymListFound from "../pages/menu/Gyms/GymListFound";
-import GymDetail from "../pages/menu/Gyms/GymDetail";
-import NaverMap from "../components/main/NaverMap";
-import RoutineDetail from "../pages/menu/AiRoutine/RoutineDetail";
-import RoutineForm from "../pages/menu/AiRoutine/RoutineForm";
-import RoutineList from "../pages/menu/AiRoutine/RoutineList";
-import CalendarView from "../components/main/CalendarView";
+
+const ServiceLayout = lazy(() => import("../layouts/ServiceLayout"));
+const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
+const MapsLayout = lazy(() => import("../layouts/MapsLayout"));
+const HomePage = lazy(() => import("../pages/Home/HomePage"));
+const LoginPage = lazy(() => import("../pages/Login/LoginPage"));
+const SignupPage = lazy(() => import("../pages/Signup/SignupPage"));
+const GymListPage = lazy(() => import("../pages/menu/Gyms/GymListPage"));
+const GymDetail = lazy(() => import("../pages/menu/Gyms/GymDetail"));
+const AiRoutinePage = lazy(
+  () => import("../pages/menu/AiRoutine/AiRoutinePage")
+);
+const CalendarPage = lazy(() => import("../pages/menu/Calendar/CalendarPage"));
+const CommunityListPage = lazy(
+  () => import("../pages/menu/Community/CommunityListPage")
+);
+const MyPage = lazy(() => import("../pages/menu/MyPage/MyPage"));
+const NotFoundPage = lazy(() => import("../pages/menu/NotFound/NotFoundPage"));
+const DietListPage = lazy(() => import("../pages/menu/Diet/DietListPage"));
+const GymListFound = lazy(() => import("../pages/menu/Gyms/GymListFound"));
+const NaverMap = lazy(() => import("../components/main/NaverMap"));
+const RoutineDetail = lazy(
+  () => import("../pages/menu/AiRoutine/RoutineDetail")
+);
+const RoutineForm = lazy(() => import("../pages/menu/AiRoutine/RoutineForm"));
+const RoutineList = lazy(() => import("../pages/menu/AiRoutine/RoutineList"));
+const CalendarView = lazy(() => import("../components/main/CalendarView"));
 
 function ProtectedRoute({ children }) {
   const { isLoggedIn } = useAuth();
@@ -64,11 +72,24 @@ export default function AppRouter() {
         {/* 식단 탭 */}
         <Route path="/diet" element={<DietListPage />} />
 
-        {/* 캘린더 탭 */}
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/calender/Main" element={<CalendarView />} />
-        {/* 커뮤니티 탭 */}
-        <Route path="/community" element={<CommunityListPage />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <ServiceLayout />
+            </ProtectedRoute>
+          }
+        >
+          {/* 헬스탭 아마 지도랑 헬스탭은 합칠거같아요*/}
+          <Route path="/gyms" element={<GymListPage />} />
+          <Route path="/gyms/found" element={<GymListFound />} />
+          <Route path="/gym/:id" element={<GymDetail />} />
+
+          {/* 루틴 탭 */}
+          <Route path="/ai-routine" element={<AiRoutinePage />}>
+            <Route index element={<RoutineList />} />
+            <Route path="create" element={<RoutineForm />} />
+            <Route path=":routineId" element={<RoutineDetail />} />
+          </Route>
 
         {/* 마이 페이지 */}
         <Route path="/mypage" element={<MyPage />} />
