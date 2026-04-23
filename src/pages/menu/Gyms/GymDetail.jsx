@@ -81,7 +81,7 @@ const GymDetail = () => {
             marginBottom: "20px",
           }}
         >
-          {isFavorite ? "♥ 찜한 헬스장" : "♡ 찜하기"}
+          {isFavorite ? "♥ 찜하기" : "♡ 찜하기"}
         </button>
 
         <div
