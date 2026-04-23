@@ -620,15 +620,6 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
-.service-ad-box strong {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--ink-strong);
-  font-size: 0.9rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .route-loading {
   min-height: 100vh;
   display: flex;
