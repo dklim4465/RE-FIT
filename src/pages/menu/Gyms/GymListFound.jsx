@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useListPage } from "../../../hooks/gyms/useListPage";
 import GymItem from "./GymItem";
 
-const GymListFound = ({ gyms }) => {
+const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
   const navigate = useNavigate();
 
   const {
@@ -98,7 +98,11 @@ const GymListFound = ({ gyms }) => {
               onClick={() => navigate(`/gym/${gym.id}`, { state: { gym } })}
               style={{ cursor: "pointer" }}
             >
-              <GymItem gym={gym} />
+              <GymItem
+                gym={gym}
+                isFavorite={favoriteGymIds.includes(gym.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
             </div>
           ))
         ) : (

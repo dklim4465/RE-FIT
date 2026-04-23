@@ -1,13 +1,20 @@
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 
 const GymDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const gym = location.state?.gym;
+  const { favoriteGymIds, toggleFavorite } = useGymFavorites();
+  const gymFromState = location.state?.gym;
+  const gym =
+    gymFromState && String(gymFromState.id) === String(id)
+      ? gymFromState
+      : null;
+  const isFavorite = favoriteGymIds.includes(gym?.id);
 
-  if (!gym || String(gym.id) !== String(id)) {
+  if (!gym) {
     return (
       <div style={{ padding: "50px", textAlign: "center" }}>
         <h3>정보를 찾을 수 없습니다.</h3>
@@ -59,6 +66,23 @@ const GymDetail = () => {
       >
         <h1 style={{ fontSize: "24px", marginBottom: "10px" }}>{gym.name}</h1>
         <p style={{ color: "#666", marginBottom: "20px" }}>📍 {gym.address}</p>
+        <button
+          type="button"
+          onClick={() => toggleFavorite(gym.id)}
+          style={{
+            border: "none",
+            background: isFavorite ? "#ffe3e3" : "#f5f5f5",
+            color: isFavorite ? "#e03131" : "#777",
+            borderRadius: "999px",
+            padding: "10px 14px",
+            fontSize: "14px",
+            fontWeight: "700",
+            cursor: "pointer",
+            marginBottom: "20px",
+          }}
+        >
+          {isFavorite ? "♥ 찜한 헬스장" : "♡ 찜하기"}
+        </button>
 
         <div
           style={{
