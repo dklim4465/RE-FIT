@@ -1,13 +1,12 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet } from "react-router-dom";
+import BrandLogo from "../components/common/BrandLogo";
 
 export default function AuthLayout() {
   return (
     <div className="auth-layout">
-      <header className="auth-header">
-        <Link to="/" className="box auth-logo-box">
-          사이트 이름
-        </Link>
-      </header>
+      <Link to="/" className="box auth-logo-box">
+        <BrandLogo />
+      </Link>
 
       <main className="auth-content">
         <Outlet />
