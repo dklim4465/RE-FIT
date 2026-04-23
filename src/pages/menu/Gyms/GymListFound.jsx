@@ -192,5 +192,4 @@ const styles = {
     transition: "all 0.2s ease",
   },
 };
-
 export default GymListFound;
