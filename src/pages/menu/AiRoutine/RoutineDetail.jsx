@@ -1,7 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import RoutineContent from "../../../components/routines/RoutineContent";
 import { useAiRoutine } from "../../../hooks/routines/useAiRoutine";
 
 export default function RoutineDetail() {
@@ -42,7 +41,7 @@ export default function RoutineDetail() {
         {routine.notes && <p>추가 요청사항: {routine.notes}</p>}
 
         <div className="ai-result">
-          <RoutineContent content={routine.content} />
+          <pre>{routine.content}</pre>
         </div>
 
         <div className="card-actions">

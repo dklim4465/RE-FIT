@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useListPage } from "../../../hooks/gyms/useListPage";
-import GymItem from "./GymItem";
+import { useListPage } from "../hooks/useListPage";
+import GymItem from "../menu/Gyms/GymItem";
 
-const GymListFound = ({ gyms }) => {
+const GymListPage = ({ gyms }) => {
   const navigate = useNavigate();
 
   const {
@@ -20,14 +20,7 @@ const GymListFound = ({ gyms }) => {
 
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
-      <h2
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-        }}
-      >
+      <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         📍 헬스장 찾기
       </h2>
 
@@ -129,4 +122,4 @@ const GymListFound = ({ gyms }) => {
   );
 };
 
-export default GymListFound;
+export default GymListPage;

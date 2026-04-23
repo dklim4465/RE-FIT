@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../store/AuthContext";
-import BrandLogo from "./BrandLogo";
 
 export default function HomeHeader() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -9,7 +8,7 @@ export default function HomeHeader() {
     <header className="home-header">
       <div className="home-header-left">
         <Link to="/" className="box home-site-name">
-          <BrandLogo />
+          RE : FIT
         </Link>
       </div>
 
@@ -20,7 +19,7 @@ export default function HomeHeader() {
             className="box home-login-button"
             onClick={logout}
           >
-            {user.name}님 반갑습니다 | 로그아웃
+            {user.name}님 반갑습니다. 로그아웃
           </button>
         ) : (
           <Link to="/login" className="box home-login-button">

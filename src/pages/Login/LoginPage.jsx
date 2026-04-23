@@ -13,10 +13,10 @@ export default function LoginPage() {
 
   const redirectPath = location.state?.from || "/";
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
-    const result = await login({
+    const result = login({
       name,
       password,
     });
@@ -31,8 +31,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-inner-card">
-      <section className="login-page">
+    <div className="auth-content">
+      <div className="login-page">
         <h1>로그인</h1>
         <p>이름과 비밀번호를 입력해주세요.</p>
 
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
           <button type="submit">로그인</button>
         </form>
-      </section>
+      </div>
     </div>
   );
 }

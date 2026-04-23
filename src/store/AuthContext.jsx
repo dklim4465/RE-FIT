@@ -1,5 +1,4 @@
 import { createContext, useContext, useMemo, useState } from "react";
-import { loginUser } from "../api/authApi";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "refit_user";
@@ -16,24 +15,27 @@ function getStoredUser() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser);
 
-  const login = async ({ name, password }) => {
-    try {
-      const nextUser = await loginUser({ name, password });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
-      setUser(nextUser);
+  const login = ({ name, password }) => {
+    const trimmedName = name.trim();
+    const trimmedPassword = password.trim();
 
-      return {
-        success: true,
-      };
-    } catch (error) {
+    if (!trimmedName || !trimmedPassword) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "로그인 처리 중 문제가 발생했습니다.",
+        message: "이름과 비밀번호를 모두 입력해주세요.",
       };
     }
+
+    const nextUser = {
+      name: trimmedName,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+    setUser(nextUser);
+
+    return {
+      success: true,
+    };
   };
 
   const logout = () => {
