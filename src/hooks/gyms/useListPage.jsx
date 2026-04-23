@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+const collator = new Intl.Collator("ko-KR", {
+  sensitivity: "base",
+  numeric: true,
+});
+
+const normalizeText = (value = "") => value.trim().replace(/\s+/g, " ");
+
 export const useListPage = (initialGyms) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(1);
@@ -25,13 +32,15 @@ export const useListPage = (initialGyms) => {
 
     // 지역 필터
     if (selectedRegion !== "전체") {
-      result = result.filter((gym) => gym.region === selectedRegion);
+      result = result.filter(
+        (gym) => normalizeText(gym.region) === normalizeText(selectedRegion)
+      );
     }
 
     // 검색어 필터
     if (urlSearch) {
       result = result.filter((gym) =>
-        gym.name.toLowerCase().includes(urlSearch.toLowerCase())
+        normalizeText(gym.name).toLowerCase().includes(urlSearch.toLowerCase())
       );
     }
 
@@ -40,12 +49,7 @@ export const useListPage = (initialGyms) => {
       result.sort((a, b) => a.distance - b.distance);
     } else {
       // 한글 이름 기준 가나다순 정렬
-      result.sort((a, b) =>
-        (a.name || "").localeCompare(b.name || "", "ko-KR", {
-          sensitivity: "base",
-          numeric: true,
-        })
-      );
+      result.sort((a, b) => collator.compare(a.name || "", b.name || ""));
     }
 
     return result;
