@@ -1,0 +1,86 @@
+/* 1. 모든 카드의 공통 부모 스타일 */
+.home-menu-card,
+.home-map-link-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  align-content: center !important;
+  position: relative !important;
+
+  min-height: 250px !important;
+  height: 100% !important;
+  background: #ffffff !important;
+  border-radius: 30px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+  text-decoration: none !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 2. 중앙 내용물 컨테이너 */
+.menu-content-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  width: 100%;
+}
+
+/* 3. 텍스트 및 아이콘 */
+.big-icon {
+  font-size: 3.5rem;
+}
+.small-icon {
+  font-size: 2.5rem;
+}
+
+strong {
+  font-size: 1.4rem;
+  color: #111218;
+  font-weight: 800;
+  display: block;
+}
+
+.icon-desc {
+  font-size: 0.95rem;
+  color: #666b85;
+  margin: 0;
+}
+
+/* 4. AI 루틴 전용 */
+.home-menu-card.ai-highlight {
+  border: 2px solid #7c87ff !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f5ff 100%) !important;
+}
+
+.ai-badge {
+  position: absolute !important;
+  top: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #7c87ff;
+}
+
+.ai-cta-button {
+  position: absolute !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 80% !important;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111218;
+  text-align: center;
+}
+
+/* 호버 */
+.home-menu-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(124, 135, 255, 0.12);
+}
