@@ -1,73 +1,41 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import GymItem from "./GymItem";
-import {
-  calculateDistanceKm,
-  getReferenceLocation,
-} from "../../../utils/locationStorage";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useListPage } from "../hooks/useListPage";
+import GymItem from "../menu/Gyms/GymItem";
 
-function createGymSeedData() {
-  const base = getReferenceLocation();
+const GymListPage = ({ gyms }) => {
+  const navigate = useNavigate();
 
-  return Array.from({ length: 500 }, (_, index) => {
-    const ring = Math.floor(index / 25) + 1;
-    const angle = ((index * 37) % 360) * (Math.PI / 180);
-    const latOffset = Math.cos(angle) * 0.0032 * ring;
-    const lngOffset = Math.sin(angle) * 0.0041 * ring;
-    const lat = base.lat + latOffset;
-    const lng = base.lng + lngOffset;
-    const distance = calculateDistanceKm(base, { lat, lng });
+  const {
+    inputText,
+    setInputText,
+    filteredGyms,
+    sortType,
+    selectedRegion,
+    setPage,
+    hasMore,
+    handleSearch,
+    updateParams,
+  } = useListPage(gyms);
 
-    return {
-      id: index + 1,
-      name: `RE:FIT 헬스장 ${index + 1}호점`,
-      lat,
-      lng,
-      distance: Number(distance.toFixed(1)),
-      price: Math.floor(Math.random() * 51 + 20) * 1000,
-      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
-    };
-  }).sort((a, b) => a.distance - b.distance);
-}
+  return (
+    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
+      <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        📍 헬스장 찾기
+      </h2>
 
-const GymListFound = () => {
-  const [rawData, setRawData] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [page, setPage] = useState(1);
-  const observerTarget = useRef(null);
-  const referenceLocation = useMemo(() => getReferenceLocation(), []);
-
-  useEffect(() => {
-    setRawData(createGymSeedData());
-  }, []);
-
-  const displayedGyms = rawData.slice(0, page * 10);
-  const hasMore = displayedGyms.length < rawData.length;
-
-  useEffect(() => {
-    if (!observerTarget.current || !hasMore) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(observerTarget.current);
-
-    return () => observer.disconnect();
-  }, [hasMore]);
-
-  if (selectedId) {
-    const selectedGym = rawData.find((gym) => gym.id === selectedId);
-
-    return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <div
+      {/* 검색창 */}
+      <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+        <input
+          type="text"
+          placeholder="검색어를 입력하세요"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
           style={{
             flex: 1,
             padding: "10px",
@@ -154,4 +122,4 @@ const GymListFound = () => {
   );
 };
 
-export default GymListFound;
+export default GymListPage;
