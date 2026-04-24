@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import HomeHeader from "../../components/common/HomeHeader";
+import NaverMap from "../../components/main/NaverMap";
 import Popup from "../../components/Popup";
 
 // 메뉴 구성 데이터
@@ -37,12 +38,9 @@ export default function HomePage() {
       <main className="home-main-box">
         {/* 상단: 지도 이동 영역 */}
         <section className="home-map-area">
-          <Link to="/maps" className="home-map-link-card">
-            <div className="menu-content-container">
-              <span className="big-icon">📍</span>
-              <strong>내 주변 헬스장 찾기</strong>
-            </div>
-          </Link>
+          <div className="home-map-embed">
+            <NaverMap />
+          </div>
         </section>
 
         {/* 하단: 주요 서비스 메뉴 그리드 */}
