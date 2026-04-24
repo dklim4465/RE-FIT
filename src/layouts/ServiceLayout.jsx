@@ -19,7 +19,6 @@ export default function ServiceLayout() {
 
       <section className="service-main-box">
         <ServiceMenu />
-
         <main className="service-content-box">
           <Outlet />
         </main>

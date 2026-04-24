@@ -46,11 +46,11 @@ export default function HomeHeader() {
             className="box home-login-button"
             onClick={logout}
           >
-            {user.name}님 반갑습니다 | 로그아웃
+            {user?.name ? `${user.name} 님 | 로그아웃` : "로그아웃"}
           </button>
         ) : (
           <Link to="/login" className="box home-login-button">
-            로그인을 해주세요
+            로그인을해주세요
           </Link>
         )}
       </div>
