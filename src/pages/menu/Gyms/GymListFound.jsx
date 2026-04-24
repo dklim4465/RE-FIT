@@ -1,10 +1,16 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react"; // 수정 useEffect 추가
+import { useNavigate, useLocation } from "react-router-dom"; // 수정useLocation 추가
 import { useListPage } from "../../../hooks/gyms/useListPage";
 import GymItem from "./GymItem";
 
 const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // 추가상세 페이지에서 전달한 state를 받기 위함
+
+  // 수정 초기 상태를 상세 페이지에서 넘어온 'showFavorites' 값에 따라 설정
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(
+    location.state?.showFavorites || false
+  );
 
   const {
     inputText,
@@ -17,6 +23,25 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
     handleSearch,
     updateParams,
   } = useListPage(gyms);
+
+  // 추가 상세 페이지에서 '목록 확인'을 눌러 이동했을 때 필터를 자동으로 켜주는 로직
+  useEffect(() => {
+    if (location.state?.showFavorites) {
+      setShowOnlyFavorites(true);
+
+      // 주소창의 state를 비워주어 새로고침 시 상태가 유지되지 않도록 관리 (선택 사항)
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // ---------------------------------------------------------
+  // 추가 최종 렌더링용 리스트 필터링
+  // 검색 결과(filteredGyms) 중에서 찜 상태인 것만 한 번 더 골라냅니다.
+  // ---------------------------------------------------------
+  const displayGyms = showOnlyFavorites
+    ? filteredGyms.filter((gym) => favoriteGymIds.includes(gym.id))
+    : filteredGyms;
+  // ---------------------------------------------------------
 
   return (
     <div style={styles.container}>
@@ -43,6 +68,21 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
       </div>
 
       <div style={styles.filterSection}>
+        {/* 추가 찜 목록 토글 버튼*/}
+        <button
+          onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+          style={{
+            ...styles.selectBox,
+            backgroundColor: showOnlyFavorites ? "#7c5dfa" : "#fff",
+            color: showOnlyFavorites ? "#fff" : "#7c5dfa",
+            fontWeight: "bold",
+            border: `1px solid ${showOnlyFavorites ? "#7c5dfa" : "#f1f1f5"}`,
+            transition: "all 0.2s ease",
+          }}
+        >
+          {showOnlyFavorites ? "❤️ 전체보기" : "🤍 찜 "}
+        </button>
+
         <select
           value={selectedRegion}
           onChange={(e) => updateParams({ region: e.target.value })}
@@ -64,8 +104,9 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
       </div>
 
       <div style={styles.listContainer}>
-        {filteredGyms.length > 0 ? (
-          filteredGyms.map((gym) => (
+        {/* ✅ [수정] filteredGyms 대신 필터가 완료된 displayGyms를 맵핑합니다. */}
+        {displayGyms.length > 0 ? (
+          displayGyms.map((gym) => (
             <div
               key={gym.id}
               onClick={() => navigate(`/gym/${gym.id}`, { state: { gym } })}
@@ -79,11 +120,17 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
             </div>
           ))
         ) : (
-          <p style={styles.noResult}>검색 결과가 없습니다.</p>
+          <p style={styles.noResult}>
+            {/* 찜 목록이 비었을 때와 일반 검색 결과가 없을 때를 구분 */}
+            {showOnlyFavorites
+              ? "찜한 헬스장이 없습니다. 상세 정보에서 ❤️를 눌러보세요!"
+              : "검색 결과가 없습니다."}
+          </p>
         )}
       </div>
 
-      {hasMore && (
+      {/* 찜 목록 보기 중에는 더보기 숨깁니다. */}
+      {hasMore && !showOnlyFavorites && (
         <button
           onClick={() => setPage((prev) => prev + 1)}
           style={styles.moreButton}
@@ -98,10 +145,10 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
 const styles = {
   container: {
     padding: "40px 24px",
-    maxWidth: "600px",
+    maxWidth: "800px",
     margin: "0 auto",
     backgroundColor: "#fff",
-    borderRadius: "24px", // 컨테이너도 둥글게 처리
+    borderRadius: "24px",
   },
   header: {
     display: "flex",
@@ -124,7 +171,7 @@ const styles = {
     padding: "14px 20px",
     borderRadius: "14px",
     border: "1px solid #f1f1f5",
-    backgroundColor: "#f8f8fa", // 약간의 보라색 기가 도는 연회색
+    backgroundColor: "#f8f8fa",
     fontSize: "15px",
     outline: "none",
     color: "#333",
@@ -134,12 +181,12 @@ const styles = {
     padding: "0 24px",
     borderRadius: "14px",
     border: "none",
-    backgroundColor: "#7c5dfa", // 상단 바와 어울리는 포인트 보라색
+    backgroundColor: "#7c5dfa",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
     fontSize: "15px",
-    boxShadow: "0 4px 12px rgba(124, 93, 250, 0.2)", // 버튼 입체감
+    boxShadow: "0 4px 12px rgba(124, 93, 250, 0.2)",
   },
   filterSection: {
     marginBottom: "30px",
@@ -156,7 +203,8 @@ const styles = {
     backgroundColor: "#fff",
     cursor: "pointer",
     outline: "none",
-    appearance: "none", // 기본 화살표 스타일 초기화 //cursor: "pointer"랑 같은 말
+    appearance: "none",
+    textAlign: "center",
   },
   listContainer: {
     display: "flex",
@@ -170,7 +218,7 @@ const styles = {
     transition: "all 0.2s ease",
     backgroundColor: "#fff",
     border: "1px solid #f8f8f8",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.03)", // 카드 그림자
+    boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
   },
   noResult: {
     textAlign: "center",
@@ -192,4 +240,5 @@ const styles = {
     transition: "all 0.2s ease",
   },
 };
+
 export default GymListFound;

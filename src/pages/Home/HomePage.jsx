@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import HomeHeader from "../../components/common/HomeHeader";
 import Popup from "../../components/Popup";
 
+// 메뉴 구성 데이터
 const homeMenuItems = [
   { label: "헬스장", path: "/gyms", icon: "🏋️‍♂️", desc: "주변 시설 확인" },
   {
@@ -17,46 +18,34 @@ const homeMenuItems = [
 ];
 
 export default function HomePage() {
-  // ★ 수정 1: 기본값을 true로 설정해서 처음부터 보이게 함
+  // 팝업 표시 여부 상태 (Popup 컴포넌트가 내부에서 24시간 체크를 수행함)
   const [showPopup, setShowPopup] = useState(true);
 
-  useEffect(() => {
-    /* ★ 수정 2: 24시간 체크 로직을 잠시 주석 처리합니다.
-    const blockedUntil = localStorage.getItem("popup_block_main");
-    const now = Date.now();
-    if (!blockedUntil || now > parseInt(blockedUntil)) {
-      setShowPopup(true);
-    }
-    */
-
-    // 개발 중에는 항상 팝업이 뜨도록 강제 설정
-    setShowPopup(true);
-  }, []);
-
+  // 팝업 닫기 및 차단 시 호출될 함수
   const closePopup = () => setShowPopup(false);
-
-  // ★ 수정 3: 차단 버튼을 눌러도 저장하지 않고 그냥 닫기만 함 (테스트용)
-  const blockPopup = () => {
-    setShowPopup(false);
-  };
 
   return (
     <div className="home-page">
-      {/* 팝업 렌더링 */}
-      {showPopup && <Popup onClose={closePopup} onBlock={blockPopup} />}
+      {/* 팝업 렌더링: 
+        쇼핑몰처럼 메인 페이지 진입 시 바로 띄워줍니다. 
+        실제 노출 여부는 Popup 내부의 localStorage 로직이 결정합니다.
+      */}
+      {showPopup && <Popup onClose={closePopup} onBlock={closePopup} />}
 
       <HomeHeader />
 
       <main className="home-main-box">
+        {/* 상단: 지도 이동 영역 */}
         <section className="home-map-area">
           <Link to="/maps" className="home-map-link-card">
             <div className="menu-content-container">
               <span className="big-icon">📍</span>
-              <strong>헬스장 찾기</strong>
+              <strong>내 주변 헬스장 찾기</strong>
             </div>
           </Link>
         </section>
 
+        {/* 하단: 주요 서비스 메뉴 그리드 */}
         <section className="home-menu-area">
           <div className="home-menu-grid">
             {homeMenuItems.map((menu) => (

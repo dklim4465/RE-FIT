@@ -2,17 +2,15 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import GymListFound from "./GymListFound";
 import Papa from "papaparse";
+// 추가 찜하기 기능을 사용하기 위해 훅 임포트
+import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 
 const CSV_FILES = ["/gym_data.csv", "/gym_data2.csv"];
 const normalizeText = (value = "") => value.trim().replace(/\s+/g, " ");
 
 const decodeCsvBuffer = (buffer) => {
   const utf8Text = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
-
-  if (!utf8Text.includes("\uFFFD")) {
-    return utf8Text;
-  }
-
+  if (!utf8Text.includes("\uFFFD")) return utf8Text;
   try {
     return new TextDecoder("euc-kr", { fatal: false }).decode(buffer);
   } catch {
@@ -49,8 +47,6 @@ const mapGymRow = (row, index, sourceName) => {
     category,
     region: getRegionFromAddress(address, sourceName),
     distance: index + 1,
-    price: "",
-    rating: "",
     isDiscount: (index + 1) % 2 === 0,
     discountLabel: "오늘의 할인!",
     discountText: "회원권 10% 할인",
@@ -59,6 +55,8 @@ const mapGymRow = (row, index, sourceName) => {
 
 export default function GymListPage() {
   const [gymData, setGymData] = useState([]);
+  // 추가 찜 데이터와 토글 함수를 여기서 관리합니다.
+  const { favoriteGymIds, toggleFavorite } = useGymFavorites();
 
   useEffect(() => {
     const loadGymData = async () => {
@@ -66,62 +64,42 @@ export default function GymListPage() {
         const datasets = await Promise.all(
           CSV_FILES.map(async (filePath) => {
             const response = await fetch(filePath);
-
-            if (!response.ok) {
-              throw new Error(`${filePath} 파일을 불러오지 못했습니다.`);
-            }
-
             const buffer = await response.arrayBuffer();
             const csvText = decodeCsvBuffer(buffer);
             const parsed = Papa.parse(csvText, {
               header: true,
               skipEmptyLines: true,
             });
-
-            if (parsed.errors.length > 0) {
-              console.error(`${filePath} CSV 파싱 에러:`, parsed.errors);
-            }
-
             return parsed.data
               .map((row, index) => mapGymRow(row, index, filePath))
               .filter((gym) => gym.name && gym.address);
           })
         );
-
-        // [수정] 1. 실제 데이터를 하나로 합칩니다.
         const allRealData = datasets.flat();
-
-        // [수정] 2. 성능 테스트를 위한 가짜 데이터 5000개를 생성합니다.
         const dummyData = Array.from({ length: 5000 }, (_, i) => ({
           id: `dummy-${i}`,
           name: `[테스트] 파워 헬스장 ${i + 1}호점`,
           address:
             i % 2 === 0 ? "서울시 성동구 행당동" : "서울시 용산구 한강로",
-          category: "체력단련장업",
           region: i % 2 === 0 ? "성동구" : "용산구",
           distance: 100 + i,
-          price: "", // mapGymRow와 동일하게 설정
-          rating: "", // mapGymRow와 동일하게 설정
-          isDiscount: i % 5 === 0,
-          discountLabel: "성능테스트!",
-          discountText: "가상화 리스트 테스트 중",
         }));
-
-        // [수정] 3. 실제 데이터와 가짜 데이터를 합쳐서 상태에 저장합니다.
         setGymData([...allRealData, ...dummyData]);
       } catch (err) {
-        console.error("헬스장 데이터 로딩 실패:", err);
+        console.error("데이터 로딩 실패:", err);
       }
     };
-
     loadGymData();
   }, []);
 
   return (
     <section className="page-placeholder">
-      <h3>
-        <GymListFound gyms={gymData} />
-      </h3>
+      {/*수정 GymListFound에 필요한 props를 모두 전달합니다. */}
+      <GymListFound
+        gyms={gymData}
+        favoriteGymIds={favoriteGymIds}
+        onToggleFavorite={toggleFavorite}
+      />
       <Outlet />
     </section>
   );
