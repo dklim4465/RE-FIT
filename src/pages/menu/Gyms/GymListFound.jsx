@@ -3,7 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useListPage } from "../../../hooks/gyms/useListPage";
 import GymItem from "./GymItem";
 
-const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
+const GymListFound = ({
+  gyms,
+  favoriteGymIds = [],
+  favoriteGyms = [],
+  onToggleFavorite,
+}) => {
   const navigate = useNavigate();
   const location = useLocation(); // 추가상세 페이지에서 전달한 state를 받기 위함
 
@@ -30,6 +35,11 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
     [favoriteGymIds]
   );
 
+  const storedFavoriteGyms = useMemo(
+    () => favoriteGyms.filter((gym) => gym?.id),
+    [favoriteGyms]
+  );
+
   // 추가 상세 페이지에서 '목록 확인'을 눌러 이동했을 때 필터를 자동으로 켜주는 로직
   useEffect(() => {
     if (location.state?.showFavorites) {
@@ -44,10 +54,26 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
   // 데이터가 500개 이상일 때, 검색어나 찜 상태가 변하지 않으면 재연산하지 않습니다.
   // ---------------------------------------------------------
   const displayGyms = useMemo(() => {
-    return showOnlyFavorites
-      ? allFilteredGyms.filter((gym) => favoriteGymIdSet.has(String(gym.id)))
-      : filteredGyms;
-  }, [showOnlyFavorites, allFilteredGyms, filteredGyms, favoriteGymIdSet]);
+    if (!showOnlyFavorites) return filteredGyms;
+
+    const matchedGyms = allFilteredGyms.filter((gym) =>
+      favoriteGymIdSet.has(String(gym.id))
+    );
+    const matchedGymIds = new Set(matchedGyms.map((gym) => String(gym.id)));
+    const storedOnlyGyms = storedFavoriteGyms.filter(
+      (gym) =>
+        favoriteGymIdSet.has(String(gym.id)) &&
+        !matchedGymIds.has(String(gym.id))
+    );
+
+    return [...matchedGyms, ...storedOnlyGyms];
+  }, [
+    showOnlyFavorites,
+    allFilteredGyms,
+    filteredGyms,
+    favoriteGymIdSet,
+    storedFavoriteGyms,
+  ]);
   // ---------------------------------------------------------
 
   return (

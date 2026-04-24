@@ -1,6 +1,17 @@
 const ROUTINE_WINDOW_DAYS = 21;
 const KOREAN_WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
+//운동날이 말도안되는 패턴으로 안들어가게 함
+const PRACTICAL_WEEKDAY_PATTERNS = {
+  1: [1],
+  2: [1, 4],
+  3: [1, 3, 5],
+  4: [1, 2, 4, 6],
+  5: [1, 2, 3, 5, 6],
+  6: [1, 2, 3, 4, 5, 6],
+  7: [0, 1, 2, 3, 4, 5, 6],
+};
+
 // 날짜 비교가 흔들리지 않도록 시간을 자정으로 맞춘다.
 function startOfDay(date) {
   const nextDate = new Date(date);
@@ -60,27 +71,26 @@ function extractWeekdaysFromContent(content = "") {
   return weekdays;
 }
 
-// 본문에 요일 정보가 없으면 시작 요일 기준으로 주 n회를 고르게 분산한다.
-function buildFallbackWeekdays(count, anchorDay) {
-  const picked = [];
-  const used = new Set();
-  const step = 7 / count;
-
-  for (let index = 0; index < count; index += 1) {
-    let candidate = (anchorDay + Math.round(index * step)) % 7;
-
-    while (used.has(candidate)) {
-      candidate = (candidate + 1) % 7;
-    }
-
-    used.add(candidate);
-    picked.push(candidate);
-  }
-
-  return picked.sort(
+function sortFromAnchor(weekdays, anchorDay) {
+  return [...weekdays].sort(
     (left, right) =>
       ((left - anchorDay + 7) % 7) - ((right - anchorDay + 7) % 7)
   );
+}
+
+function hasUnsafeConsecutiveTrainingDays(weekdays) {
+  if (weekdays.length >= 6) {
+    return false;
+  }
+
+  const weekdaySet = new Set(weekdays);
+  return weekdays.some((weekday) => weekdaySet.has((weekday + 1) % 7));
+}
+
+// 실제 운동 루틴처럼 회복일이 섞인 추천 요일 패턴을 사용한다.
+function buildPracticalWeekdays(count, anchorDay) {
+  const pattern = PRACTICAL_WEEKDAY_PATTERNS[count] || [];
+  return sortFromAnchor(pattern, anchorDay);
 }
 
 // 루틴 하나를 어떤 요일에 반복할지 확정한다.
@@ -96,11 +106,14 @@ function resolveRoutineWeekdays(routine, startDate) {
     weeklyFrequency
   );
 
-  if (parsedWeekdays.length === weeklyFrequency) {
-    return parsedWeekdays;
+  if (
+    parsedWeekdays.length === weeklyFrequency &&
+    !hasUnsafeConsecutiveTrainingDays(parsedWeekdays)
+  ) {
+    return sortFromAnchor(parsedWeekdays, startDate.getDay());
   }
 
-  return buildFallbackWeekdays(weeklyFrequency, startDate.getDay());
+  return buildPracticalWeekdays(weeklyFrequency, startDate.getDay());
 }
 
 // 일정 생성 시작일은 저장된 시작일을 우선 쓰고, 과거면 오늘로 끌어올린다.
