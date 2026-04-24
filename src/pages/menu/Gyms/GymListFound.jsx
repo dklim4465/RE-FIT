@@ -104,7 +104,7 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
       </div>
 
       <div style={styles.listContainer}>
-        {/* ✅ [수정] filteredGyms 대신 필터가 완료된 displayGyms를 맵핑합니다. */}
+        {/* 수정 filteredGyms 대신 필터가 완료된 displayGyms를 맵핑합니다. */}
         {displayGyms.length > 0 ? (
           displayGyms.map((gym) => (
             <div
