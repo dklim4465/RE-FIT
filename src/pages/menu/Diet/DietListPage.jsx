@@ -71,9 +71,21 @@ export default function DietListPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3",
+          model: "llama3.2",
           system: KOREAN_ONLY_NOTICE,
-          prompt: `목표: ${goal}, 재료: ${ingredients || "제한 없음"}. 하루 식단을 한국어로 짜줘.`,
+          prompt: `목표: ${goal}, 재료: ${ingredients || "제한 없음"}. 하루 식단을 한국어로만 작성해줘.
+반드시 지킬 규칙:
+- 영어 알파벳, 로마자, 외국어 단어를 절대 쓰지 마.
+- 음식 이름은 모두 자연스러운 한국어로 바꿔 써.
+- 따옴표, 코드 기호, 설명 문장 없이 식단만 적어.
+- 10줄 이내로 적어.
+
+출력 형식:
+아침:
+점심:
+오후 간식:
+저녁:
+추천 이유:`,
           stream: false,
         }),
       });
