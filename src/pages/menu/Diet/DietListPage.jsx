@@ -9,12 +9,14 @@ const KOREAN_ONLY_NOTICE =
 export default function DietListPage() {
   const [goal, setGoal] = useState("체중 감량");
   const [ingredients, setIngredients] = useState("");
-  const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [dietPlans, setDietPlans] = useState([]);
-  const [editId, setEditId] = useState(null);
+  const [isGoalOpen, setIsGoalOpen] = useState(false);
+
+  // 이미지와 어울리는 보라색 포인트 컬러
+  const POINT_COLOR = "#8B5CF6";
 
   useEffect(() => {
     try {
@@ -22,208 +24,227 @@ export default function DietListPage() {
       if (savedPlans) {
         setDietPlans(JSON.parse(savedPlans));
       }
-    } catch (storageError) {
-      console.error("식단 목록을 불러오지 못했습니다.", storageError);
+    } catch (e) {
+      console.error("데이터 로드 실패");
     }
   }, []);
 
-  const saveDietPlans = (nextPlans) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPlans));
-    setDietPlans(nextPlans);
-  };
+  const renderGoalOptions = () => {
+    if (isGoalOpen === false) return null;
 
-  const buildPrompt = () => {
-    const ingredientText = ingredients.trim() || "특별히 제한 없음";
-
-    return `
-사용자 목표에 맞는 하루 식단을 만들어줘.
-
-- 목표: ${goal}
-- 선호 또는 보유 재료: ${ingredientText}
-
-중요한 작성 조건:
-- 답변은 한국어만 사용해줘.
-- 영어, 로마자, 외국어 표현은 쓰지 말아줘.
-- 음식 이름도 가능한 한 모두 자연스러운 한국어로 적어줘.
-- 설명은 이해하기 쉽게 짧고 분명하게 작성해줘.
-
-아래 형식으로 한국어로 작성해줘.
-1. 아침
-2. 점심
-3. 저녁
-4. 간식
-5. 식단 추천 이유
-`.trim();
+    return (
+      <div
+        style={{
+          marginTop: "10px",
+          borderTop: "1px solid #eee",
+          paddingTop: "10px",
+        }}
+      >
+        <select
+          value={goal}
+          onChange={(e) => {
+            setGoal(e.target.value);
+            setIsGoalOpen(false);
+          }}
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "8px",
+            border: "1px solid #ddd",
+          }}
+        >
+          <option value="체중 감량">🔥 체중 감량</option>
+          <option value="체중 증가">🍱 체중 증가</option>
+          <option value="근육 향상">💪 근육 향상</option>
+          <option value="체력 향상">🏃 체력 향상</option>
+        </select>
+      </div>
+    );
   };
 
   const handleGenerateDiet = async () => {
-    const nextPrompt = buildPrompt();
-
-    setPrompt(nextPrompt);
     setIsLoading(true);
     setError("");
     setResult("");
-
     try {
-      const ollamaRes = await fetch(OLLAMA_URL, {
+      const res = await fetch(OLLAMA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "llama3",
           system: KOREAN_ONLY_NOTICE,
-          prompt: nextPrompt,
+          prompt: `목표: ${goal}, 재료: ${ingredients || "제한 없음"}. 하루 식단을 한국어로 짜줘.`,
           stream: false,
-          options: {
-            temperature: 0.4,
-            num_predict: 800,
-          },
         }),
       });
-
-      if (!ollamaRes.ok) {
-        throw new Error(`요청 실패: ${ollamaRes.status}`);
-      }
-
-      const data = await ollamaRes.json();
-      const content = data?.response?.trim();
-
-      if (!content) {
-        throw new Error("응답 내용이 비어 있습니다.");
-      }
-
-      setResult(content);
-    } catch (fetchError) {
-      setError(
-        fetchError instanceof Error
-          ? fetchError.message
-          : "식단 생성 중 오류가 발생했습니다."
-      );
+      const data = await res.json();
+      setResult(data?.response?.trim());
+    } catch (err) {
+      setError("연결 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setGoal("체중 감량");
-    setIngredients("");
-    setPrompt("");
-    setResult("");
-    setError("");
-    setEditId(null);
-  };
-
   const handleSaveDiet = () => {
-    if (!result.trim()) {
-      setError("저장할 식단 결과가 없습니다.");
+    if (result === "") {
+      alert("내용이 없습니다!");
       return;
     }
-
-    const dietData = {
-      id: editId || Date.now().toString(),
+    const newPlan = {
+      id: Date.now().toString(),
       goal,
-      ingredients: ingredients.trim(),
-      prompt,
+      ingredients,
       result,
       updatedAt: new Date().toLocaleString("ko-KR"),
     };
-
-    const nextPlans = editId
-      ? dietPlans.map((plan) => (plan.id === editId ? dietData : plan))
-      : [dietData, ...dietPlans];
-
-    saveDietPlans(nextPlans);
-    resetForm();
-  };
-
-  const handleEditDiet = (plan) => {
-    setEditId(plan.id);
-    setGoal(plan.goal);
-    setIngredients(plan.ingredients || "");
-    setPrompt(plan.prompt || "");
-    setResult(plan.result || "");
-    setError("");
+    const nextPlans = [newPlan, ...dietPlans];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPlans));
+    setDietPlans(nextPlans);
+    setResult("");
+    setIngredients("");
+    alert("저장되었습니다!");
   };
 
   const handleDeleteDiet = (id) => {
-    const nextPlans = dietPlans.filter((plan) => plan.id !== id);
-    saveDietPlans(nextPlans);
-
-    if (editId === id) {
-      resetForm();
+    if (window.confirm("삭제할까요?")) {
+      const filtered = dietPlans.filter((p) => p.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      setDietPlans(filtered);
     }
   };
 
   return (
     <section
-      className="page-placeholder"
-      style={{ maxWidth: "720px", margin: "0 auto", padding: "24px" }}
+      style={{
+        maxWidth: "600px",
+        margin: "0 auto",
+        padding: "40px 20px",
+        color: "#333",
+        backgroundColor: "#fcfcfc",
+        minHeight: "100vh",
+      }}
     >
-      <h1>AI 식단 추천</h1>
+      <h1
+        style={{
+          textAlign: "center",
+          fontSize: "1.8rem",
+          marginBottom: "40px",
+        }}
+      >
+        🥗 AI 식단 추천
+      </h1>
 
-      <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
-        <label>
-          목표
-          <select
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-            style={{ width: "100%", padding: "10px", marginTop: "6px" }}
+      <div
+        style={{
+          display: "grid",
+          gap: "20px",
+          padding: "24px",
+          backgroundColor: "#fff",
+          borderRadius: "20px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        }}
+      >
+        {/* 목표 설정 */}
+        <div
+          style={{
+            border: "1px solid #f0f0f0",
+            borderRadius: "12px",
+            padding: "16px",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          <div
+            onClick={() => setIsGoalOpen(!isGoalOpen)}
+            style={{
+              cursor: "pointer",
+              fontWeight: "bold",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
           >
-            <option value="체중 감량">체중 감량</option>
-            <option value="근육 증가">근육 증가</option>
-            <option value="건강 유지">건강 유지</option>
-          </select>
-        </label>
+            🎯 운동 목표: {goal}
+            <span style={{ fontSize: "0.8rem", color: POINT_COLOR }}>
+              {isGoalOpen ? " ▲" : " ▼"}
+            </span>
+          </div>
+          {renderGoalOptions()}
+        </div>
 
-        <label>
-          선호 또는 보유 재료
+        {/* 재료 입력 */}
+        <label style={{ fontWeight: "bold" }}>
+          🛒 냉장고에 어떤 재료가 있나요?
           <textarea
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
-            placeholder="예: 닭가슴살, 계란, 고구마, 두부"
-            style={{ width: "100%", minHeight: "120px", marginTop: "6px" }}
+            placeholder="예: 닭가슴살, 계란, 고구마..."
+            style={{
+              width: "100%",
+              minHeight: "120px",
+              marginTop: "12px",
+              padding: "15px",
+              borderRadius: "12px",
+              border: "1px solid #eee",
+              boxSizing: "border-box",
+              resize: "none",
+            }}
           />
         </label>
 
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button onClick={handleGenerateDiet} disabled={isLoading}>
-            {isLoading ? "식단 생성 중..." : "식단 생성"}
+        {/* 버튼들 */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={handleGenerateDiet}
+            disabled={isLoading}
+            style={{
+              flex: 2,
+              padding: "16px",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: POINT_COLOR,
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+              opacity: isLoading ? 0.6 : 1,
+            }}
+          >
+            {isLoading ? "생성 중..." : "맞춤 식단 만들기"}
           </button>
-          <button onClick={handleSaveDiet} disabled={!result.trim()}>
-            {editId ? "수정 저장" : "식단 저장"}
+          <button
+            onClick={handleSaveDiet}
+            style={{
+              flex: 1,
+              padding: "16px",
+              borderRadius: "12px",
+              border: `1px solid ${POINT_COLOR}`,
+              backgroundColor: "white",
+              color: POINT_COLOR,
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            저장
           </button>
-          {editId && <button onClick={resetForm}>수정 취소</button>}
         </div>
       </div>
 
-      {error && (
-        <p style={{ color: "crimson", marginTop: "16px" }}>오류: {error}</p>
-      )}
-
-      {prompt && (
-        <div style={{ marginTop: "24px" }}>
-          <h3>전송한 프롬프트</h3>
+      {/* 결과창: if문 대신 {result && (...)} 방식을 사용해야 화면에 코드가 안 뜹니다 */}
+      {result !== "" && (
+        <div
+          style={{
+            marginTop: "30px",
+            padding: "20px",
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            border: "1px solid #f0f0f0",
+          }}
+        >
+          <h3 style={{ marginTop: 0, color: POINT_COLOR }}>✨ AI 추천 결과</h3>
           <pre
             style={{
               whiteSpace: "pre-wrap",
-              background: "#f6f6f6",
-              padding: "12px",
-              borderRadius: "8px",
-            }}
-          >
-            {prompt}
-          </pre>
-        </div>
-      )}
-
-      {result && (
-        <div style={{ marginTop: "24px" }}>
-          <h3>{editId ? "수정 중인 식단" : "추천 식단"}</h3>
-          <pre
-            style={{
-              whiteSpace: "pre-wrap",
-              background: "#f6f6f6",
-              padding: "12px",
-              borderRadius: "8px",
+              lineHeight: "1.6",
+              fontSize: "0.95rem",
             }}
           >
             {result}
@@ -231,42 +252,73 @@ export default function DietListPage() {
         </div>
       )}
 
-      <div style={{ marginTop: "32px" }}>
-        <h2>저장된 식단</h2>
+      {/* 저장된 목록 */}
+      <div style={{ marginTop: "50px" }}>
+        <h2 style={{ fontSize: "1.2rem", marginBottom: "20px" }}>
+          나의 식단 기록({dietPlans.length})
+        </h2>
         {dietPlans.length === 0 ? (
-          <p>저장된 식단이 없습니다.</p>
+          <p style={{ textAlign: "center", color: "#aaa", marginTop: "40px" }}>
+            아직 저장된 기록이 없습니다.
+          </p>
         ) : (
           dietPlans.map((plan) => (
             <div
               key={plan.id}
               style={{
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                padding: "16px",
-                marginTop: "12px",
+                backgroundColor: "#fff",
+                padding: "20px",
+                borderRadius: "16px",
+                marginBottom: "15px",
+                border: "1px solid #eee",
               }}
             >
-              <h3 style={{ marginBottom: "8px" }}>{plan.goal}</h3>
-              <p style={{ marginBottom: "8px", color: "#666" }}>
-                재료: {plan.ingredients || "특별히 제한 없음"}
-              </p>
-              <p style={{ marginBottom: "8px", color: "#666" }}>
-                저장일시: {plan.updatedAt}
-              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    backgroundColor: "#F3E8FF",
+                    color: POINT_COLOR,
+                    padding: "4px 12px",
+                    borderRadius: "20px",
+                    fontSize: "0.75rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {plan.goal}
+                </span>
+                <button
+                  onClick={() => handleDeleteDiet(plan.id)}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    color: "#ff4d4f",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
-                  background: "#fafafa",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  marginBottom: "12px",
+                  fontSize: "0.9rem",
+                  color: "#555",
                 }}
               >
                 {plan.result}
               </pre>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button onClick={() => handleEditDiet(plan)}>수정</button>
-                <button onClick={() => handleDeleteDiet(plan.id)}>삭제</button>
+              <div
+                style={{ fontSize: "0.7rem", color: "#bbb", marginTop: "10px" }}
+              >
+                {plan.updatedAt}
               </div>
             </div>
           ))

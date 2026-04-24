@@ -81,7 +81,7 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
             transition: "all 0.2s ease",
           }}
         >
-          {showOnlyFavorites ? "❤️ 전체보기" : "🤍 찜 "}
+          {showOnlyFavorites ? "❤️ 전체 보기 " : "🤍 찜"}
         </button>
 
         <select
