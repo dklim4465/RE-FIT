@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
-const OLLAMA_URL = "http://localhost:11434/api/generate";
+const DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
+const DEFAULT_OLLAMA_MODEL = "llama3.2";
+const OLLAMA_URL = `${
+  import.meta.env.VITE_OLLAMA_BASE_URL?.trim() || DEFAULT_OLLAMA_BASE_URL
+}/api/generate`;
+//둘중에 있는걸 받아라
+const OLLAMA_MODEL =
+  import.meta.env.VITE_OLLAMA_MODEL?.trim() || DEFAULT_OLLAMA_MODEL;
 const STORAGE_KEY = "ai-diet-plans";
+
 const KOREAN_ONLY_NOTICE =
   "응답은 반드시 자연스러운 한국어로만 작성하세요. 영어, 로마자, 외래어 표기를 최대한 사용하지 말고, 필요한 경우 한국어 표현으로 바꿔 쓰세요.";
 
@@ -15,6 +23,7 @@ export default function DietListPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [dietPlans, setDietPlans] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
     try {
@@ -28,8 +37,12 @@ export default function DietListPage() {
   }, []);
 
   const saveDietPlans = (nextPlans) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPlans));
-    setDietPlans(nextPlans);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPlans));
+      setDietPlans(nextPlans);
+    } catch (e) {
+      setError("저장 공간이 부족합니다. 오래된 식단을 삭제해주세요.");
+    }
   };
 
   const buildPrompt = () => {
@@ -69,7 +82,7 @@ export default function DietListPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3",
+          model: OLLAMA_MODEL,
           system: KOREAN_ONLY_NOTICE,
           prompt: nextPrompt,
           stream: false,
@@ -119,7 +132,7 @@ export default function DietListPage() {
     }
 
     const dietData = {
-      id: editId || Date.now().toString(),
+      id: editId || crypto.randomUUID(),
       goal,
       ingredients: ingredients.trim(),
       prompt,
@@ -144,13 +157,17 @@ export default function DietListPage() {
     setError("");
   };
 
-  const handleDeleteDiet = (id) => {
+  const handleDeleteRequest = (id) => {
+    setConfirmDeleteId(id);
+  };
+  const handleDeleteConfirm = (id) => {
     const nextPlans = dietPlans.filter((plan) => plan.id !== id);
     saveDietPlans(nextPlans);
-
-    if (editId === id) {
-      resetForm();
-    }
+    setConfirmDeleteId(null);
+    if (editId === id) resetForm();
+  };
+  const handleDeleteCancel = () => {
+    setConfirmDeleteId(null);
   };
 
   return (
@@ -199,7 +216,7 @@ export default function DietListPage() {
         <p style={{ color: "crimson", marginTop: "16px" }}>오류: {error}</p>
       )}
 
-      {prompt && (
+      {/* {prompt && (
         <div style={{ marginTop: "24px" }}>
           <h3>전송한 프롬프트</h3>
           <pre
@@ -213,7 +230,7 @@ export default function DietListPage() {
             {prompt}
           </pre>
         </div>
-      )}
+      )} */}
 
       {result && (
         <div style={{ marginTop: "24px" }}>
@@ -266,7 +283,14 @@ export default function DietListPage() {
               </pre>
               <div style={{ display: "flex", gap: "8px" }}>
                 <button onClick={() => handleEditDiet(plan)}>수정</button>
-                <button onClick={() => handleDeleteDiet(plan.id)}>삭제</button>
+                {confirmDeleteId === plan.id}? (
+                <>
+                  <button onClick={() => handleDeleteConfirm(plan.id)}>
+                    삭제
+                  </button>
+                  <button onClick={handleDeleteCancel}>취소</button>
+                </>
+                ) :
               </div>
             </div>
           ))
