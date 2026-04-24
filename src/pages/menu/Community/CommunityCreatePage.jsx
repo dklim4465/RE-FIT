@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import "./community.css";
 const STORAGE_KEY = "community-posts";
 const POSTS_PER_PAGE = 10;
 
@@ -120,10 +120,14 @@ export default function CommunityCreatePage() {
       />
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-        <button onClick={handleSubmit}>
+        <button className="button submit" onClick={handleSubmit}>
           {editId ? "수정하기" : "작성하기"}
         </button>
-        {editId && <button onClick={handleCancel}>취소</button>}
+        {editId && (
+          <button className="button cancel" onClick={resetForm}>
+            취소
+          </button>
+        )}
       </div>
 
       <hr />
@@ -149,9 +153,22 @@ export default function CommunityCreatePage() {
               {post.content}
             </p>
 
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => handleEdit(post)}>수정</button>
-              <button onClick={() => handleDelete(post.id)}>삭제</button>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button
+                className="button like"
+                onClick={() => handleLike(post.id)}
+              >
+                좋아요{post.likes || 0}
+              </button>
+              <button className="button edit" onClick={() => handleEdit(post)}>
+                수정
+              </button>
+              <button
+                className="button delete"
+                onClick={() => handleDelete(post.id)}
+              >
+                삭제
+              </button>
             </div>
           </div>
         ))
