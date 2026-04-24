@@ -6,7 +6,7 @@ import {
   readSelectedLocation,
   saveSelectedLocation,
 } from "../../utils/locationStorage";
-import { loadNaverMapSdk, reverseGeocodeToAddress } from "../../utils/naverMap";
+import { loadNaverMapSdk } from "../../utils/naverMap";
 import { useNearbyGyms } from "../../hooks/gyms/useNearbyGyms";
 
 function getManualLocationLabel(lat, lng) {
@@ -51,7 +51,6 @@ export default function NaverMap() {
     setSelectedLocation(nextLocation);
   };
 
-  // 근처 헬스장 마커와 인포윈도우를 다시 그리기 전에 모두 정리
   function clearNearbyGymMarkers() {
     nearbyMarkersRef.current.forEach((marker) => marker.setMap(null));
     nearbyInfoWindowsRef.current.forEach((infoWindow) => infoWindow.close());
@@ -90,41 +89,18 @@ export default function NaverMap() {
         markerRef.current = marker;
 
         // 지도 클릭 위치를 새 기준점으로 저장하고 근처 5곳을 다시 계산
-        clickListener = window.naver.maps.Event.addListener(
-          map,
-          "click",
-          async (event) => {
-            const clickedPosition = event.coord;
-            const clickedLat = clickedPosition.lat();
-            const clickedLng = clickedPosition.lng();
+        clickListener = window.naver.maps.Event.addListener(map, "click", (event) => {
+          const clickedPosition = event.coord;
+          const clickedLat = clickedPosition.lat();
+          const clickedLng = clickedPosition.lng();
 
-            try {
-              const address = await reverseGeocodeToAddress(
-                clickedLat,
-                clickedLng
-              );
-
-              moveToSelectedLocation({
-                lat: clickedLat,
-                lng: clickedLng,
-                source: "manual",
-                address,
-              });
-            } catch (reverseGeocodeError) {
-              console.error(
-                "좌표를 주소로 변환하지 못했습니다.",
-                reverseGeocodeError
-              );
-
-              moveToSelectedLocation({
-                lat: clickedLat,
-                lng: clickedLng,
-                source: "manual",
-                address: getManualLocationLabel(clickedLat, clickedLng),
-              });
-            }
-          }
-        );
+          moveToSelectedLocation({
+            lat: clickedLat,
+            lng: clickedLng,
+            source: "manual",
+            address: getManualLocationLabel(clickedLat, clickedLng),
+          });
+        });
 
         if (isMounted) {
           setIsMapReady(true);
@@ -246,7 +222,7 @@ export default function NaverMap() {
     : isResolvingGyms
       ? "헬스장 주소를 좌표로 변환하는 중입니다."
       : selectedLocation
-        ? "선택한 위치 기준 가까운 헬스장 5곳"
+        ? "선택한 위치 기준 가까운 헬스장 5곳입니다."
         : "지도에서 위치를 선택하면 가까운 헬스장 5곳이 표시됩니다.";
 
   return (
@@ -265,10 +241,7 @@ export default function NaverMap() {
         />
       </div>
 
-      <NearbyGymList
-        nearbyGyms={nearbyGyms}
-        helperMessage={helperMessage}
-      />
+      <NearbyGymList nearbyGyms={nearbyGyms} helperMessage={helperMessage} />
     </section>
   );
 }
