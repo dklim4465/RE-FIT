@@ -33,27 +33,27 @@ export default function ServiceHeader() {
     <header
       className={`service-header ${isBackgroundVisible ? "is-background-visible" : "is-background-hidden"} ${isAtTop ? "is-at-top" : "is-floating"}`}
     >
-      {isLoggedIn ? (
-        <button
-          type="button"
-          className="box service-login-box"
-          onClick={logout}
-        >
-          임대한 회원님 | 로그아웃
-        </button>
-      ) : (
-        <Link to="/login" className="box service-login-box">
-          로그인
-        </Link>
-      )}
+      <div className="service-header-spacer" aria-hidden="true" />
 
       <Link to="/" className="box service-logo-box">
         <BrandLogo />
       </Link>
 
-      <button type="button" className="box service-paid-button">
-        유료화버튼
-      </button>
+      <div className="service-header-actions">
+        {isLoggedIn ? (
+          <button
+            type="button"
+            className="box service-login-box"
+            onClick={logout}
+          >
+            {user?.name ? `${user.name} 님 | 로그아웃` : "로그아웃"}
+          </button>
+        ) : (
+          <Link to="/login" className="box service-login-box">
+            로그인
+          </Link>
+        )}
+      </div>
     </header>
   );
 }

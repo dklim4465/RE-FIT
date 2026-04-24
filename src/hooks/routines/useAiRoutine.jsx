@@ -37,6 +37,7 @@ export function useAiRoutine() {
       addRoutine({
         id: Date.now().toString(),
         createdAt: new Date().toLocaleDateString("ko-KR"),
+        scheduleStartDate: new Date().toISOString(),
         ...routineData,
       })
     );

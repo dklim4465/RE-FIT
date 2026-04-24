@@ -3,6 +3,8 @@ const NAVER_MAP_KEY_ID =
   import.meta.env.VITE_NAVER_MAP_KEY_ID ||
   import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
 
+const MIN_GEOCODE_QUERY_PARTS = 3;
+
 let naverMapSdkPromise = null;
 
 // 스크립트가 로드되어 window.naver.maps 객체를 사용할 수 있는지 확인
@@ -110,32 +112,86 @@ export function loadNaverMapSdk() {
   return naverMapSdkPromise;
 }
 
-// 주소 문자열을 좌표 정보로 변환
-export async function geocodeAddress(query) {
-  await loadNaverMapSdk();
+function normalizeAddressQuery(value = "") {
+  return value
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  return new Promise((resolve, reject) => {
-    if (!hasNaverGeocoder()) {
-      reject(new Error("주소 검색 모듈이 준비되지 않았습니다."));
-      return;
+function removeAddressDetail(value = "") {
+  return value
+    .replace(/,\s*.*$/g, "")
+    .replace(/\s*(?:지하)?\d+층.*$/g, "")
+    .replace(/\s*\d+호.*$/g, "")
+    .replace(/\s+[A-Z]\d+.*$/g, "")
+    .trim();
+}
+
+function buildGeocodeQueries(query) {
+  const normalizedQuery = normalizeAddressQuery(query);
+  const candidates = new Set();
+
+  const addCandidate = (value) => {
+    const normalizedValue = normalizeAddressQuery(value);
+
+    if (normalizedValue) {
+      candidates.add(normalizedValue);
     }
+  };
 
+  addCandidate(normalizedQuery);
+  addCandidate(removeAddressDetail(normalizedQuery));
+
+  const parts = removeAddressDetail(normalizedQuery).split(" ").filter(Boolean);
+
+  for (
+    let index = parts.length - 1;
+    index >= MIN_GEOCODE_QUERY_PARTS;
+    index -= 1
+  ) {
+    addCandidate(parts.slice(0, index).join(" "));
+  }
+
+  return [...candidates];
+}
+
+function extractGeocodeItems(response) {
+  return response?.v2?.addresses || response?.result?.items || [];
+}
+
+function requestGeocode(query) {
+  return new Promise((resolve, reject) => {
     window.naver.maps.Service.geocode({ query }, (status, response) => {
       if (status !== window.naver.maps.Service.Status.OK) {
         reject(new Error("주소 검색에 실패했습니다."));
         return;
       }
 
-      const items = response?.v2?.addresses || [];
-
-      if (items.length === 0) {
-        reject(new Error("검색한 주소를 찾을 수 없습니다."));
-        return;
-      }
-
-      resolve(items[0]);
+      resolve(extractGeocodeItems(response));
     });
   });
+}
+
+// 주소 문자열을 좌표 정보로 변환
+export async function geocodeAddress(query) {
+  await loadNaverMapSdk();
+
+  if (!hasNaverGeocoder()) {
+    throw new Error("주소 검색 모듈이 준비되지 않았습니다.");
+  }
+
+  const queries = buildGeocodeQueries(query);
+
+  for (const candidate of queries) {
+    const items = await requestGeocode(candidate);
+
+    if (items.length > 0) {
+      return items[0];
+    }
+  }
+
+  throw new Error("검색한 주소를 찾을 수 없습니다.");
 }
 
 // 좌표를 사람이 읽을 수 있는 주소 문자열로 변환
@@ -150,7 +206,8 @@ export async function reverseGeocodeToAddress(lat, lng) {
 
     window.naver.maps.Service.reverseGeocode(
       {
-        coords: new window.naver.maps.LatLng(lat, lng),
+        coords: `${lng},${lat}`,
+        orders: "roadaddr,addr",
       },
       (status, response) => {
         if (status !== window.naver.maps.Service.Status.OK) {
