@@ -58,7 +58,7 @@ const styles = {
     alignItems: "center",
     width: "100%",
     // 상단 여백을 주어 전체적으로 화면을 아래로 내림
-    paddingTop: "200px",
+    paddingTop: "100px",
   },
   header: {
     display: "flex",
