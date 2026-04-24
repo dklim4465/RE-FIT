@@ -64,7 +64,7 @@ export default function RoutineForm() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        paddingTop: "150px", //
+        paddingTop: "30px", //
       }}
     >
       <div className="form-grid" style={styles.formGrid}>

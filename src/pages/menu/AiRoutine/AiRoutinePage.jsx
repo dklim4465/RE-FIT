@@ -18,7 +18,7 @@ export default function AiRoutinePage() {
         style={{
           fontSize: "2.2rem",
           fontWeight: "bold",
-          marginTop: "180px",
+          marginTop: "80px",
           marginBottom: "30px",
           color: "#333",
           display: "flex", // 아이콘과 글자를 나란히 배치
