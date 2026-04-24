@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 
@@ -6,7 +6,8 @@ const GymDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { favoriteGymIds, toggleFavorite } = useGymFavorites();
+  const { favoriteGymIds, toggleFavorite, rememberFavoriteGym } =
+    useGymFavorites();
 
   // ---------------------------------------------------------
   // 수정 성동구 데이터 매칭 로직 개선
@@ -15,6 +16,12 @@ const GymDetail = () => {
   const gym = location.state?.gym;
 
   const isFavorite = gym ? favoriteGymIds.includes(String(gym.id)) : false;
+
+  useEffect(() => {
+    if (gym && isFavorite) {
+      rememberFavoriteGym(gym);
+    }
+  }, [gym, isFavorite, rememberFavoriteGym]);
 
   const goToFavoriteList = () => {
     navigate("/gyms", { state: { showFavorites: true } });
@@ -59,7 +66,7 @@ const GymDetail = () => {
         <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
           <button
             type="button"
-            onClick={() => toggleFavorite(gym.id)}
+            onClick={() => toggleFavorite(gym)}
             style={{
               ...styles.favBtn,
               background: isFavorite ? "#ffe3e3" : "#f5f5f5",

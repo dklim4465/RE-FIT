@@ -6,6 +6,41 @@ import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 
 const CSV_FILES = ["/gym_data.csv", "/gym_data2.csv"];
 const normalizeText = (value = "") => value.trim().replace(/\s+/g, " ");
+const SHUFFLED_IMAGE_LOCKS = [
+  9143, 2381, 6728, 1057, 7492, 3816, 5269, 8604, 1925, 4377, 7031, 2986,
+  9650, 1542, 6119, 8247, 3408, 7795, 4861, 2504, 5983, 1317, 8872, 4550,
+  7196, 3064, 9401, 1688, 5335, 8012, 2749, 6506, 1124, 9777, 4218, 7563,
+  3690, 5844, 2197, 8368, 4926, 1475, 6989, 3210, 9056, 5621, 7840, 2367,
+  6302, 1889, 8475, 4093, 7214, 3558, 9906, 5167, 2641, 6750, 1236, 8924,
+];
+
+const getImageLock = (index, sourceName = "") => {
+  const sourceShift = sourceName.includes("gym_data2") ? 23 : 0;
+  const lockIndex =
+    (index * 17 + sourceShift) % SHUFFLED_IMAGE_LOCKS.length;
+  const cycleOffset =
+    Math.floor((index * 17 + sourceShift) / SHUFFLED_IMAGE_LOCKS.length) *
+    10000;
+
+  return SHUFFLED_IMAGE_LOCKS[lockIndex] + cycleOffset;
+};
+
+const getDummyImageLock = (index) => {
+  const lockIndex = (index * 19 + 7) % SHUFFLED_IMAGE_LOCKS.length;
+  const cycleOffset = Math.floor((index * 19 + 7) / SHUFFLED_IMAGE_LOCKS.length) * 10000;
+
+  return SHUFFLED_IMAGE_LOCKS[lockIndex] + 50000 + cycleOffset;
+};
+
+const getEventFlag = (seed) => {
+  let hash = 0;
+
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % 1000;
+  }
+
+  return hash % 5 < 2;
+};
 
 const decodeCsvBuffer = (buffer) => {
   const utf8Text = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
@@ -40,6 +75,8 @@ const mapGymRow = (row, index, sourceName) => {
   const category = getRowValue(row, ["업종"]) || "헬스장";
   const rawId = getRowValue(row, ["연번", "번호", "id"]);
 
+  const eventSeed = `${sourceName}-${rawId}-${name}-${address}`;
+
   return {
     id: rawId || `${sourceName}-${index + 1}`,
     name: normalizeText(name),
@@ -54,17 +91,20 @@ const mapGymRow = (row, index, sourceName) => {
     openingHours: "평일 06:00 ~ 23:00 / 주말 09:00 ~ 18:00",
     link: "https://map.naver.com",
 
-    imageUrl: `https://loremflickr.com/400/300/gym?lock=${index + 100}`, // 덤벨/달리기/필라테스 제거
+    imageUrl: `https://loremflickr.com/400/300/gym?lock=${getImageLock(
+      index,
+      sourceName
+    )}`, // 덤벨/달리기/필라테스 제거
 
     distance: index + 1,
-    isDiscount: (index + 1) % 2 === 0,
+    isDiscount: getEventFlag(eventSeed),
     discountLabel: "EVENT !",
   };
 };
 
 export default function GymListPage() {
   const [gymData, setGymData] = useState([]);
-  const { favoriteGymIds, toggleFavorite } = useGymFavorites();
+  const { favoriteGymIds, favoriteGyms, toggleFavorite } = useGymFavorites();
 
   useEffect(() => {
     const loadGymData = async () => {
@@ -99,10 +139,12 @@ export default function GymListPage() {
           openingHours: "24시간 운영",
           link: "https://www.naver.com",
 
-          imageUrl: `https://loremflickr.com/400/300/fitness?lock=${i + 200}`, // pilates/dumbbells/running 제거
+          imageUrl: `https://loremflickr.com/400/300/fitness?lock=${getDummyImageLock(
+            i
+          )}`, // pilates/dumbbells/running 제거
 
           distance: 100 + i,
-          isDiscount: i % 3 === 0,
+          isDiscount: getEventFlag(`dummy-${i}`),
         }));
 
         setGymData([...allRealData, ...dummyData]);
@@ -118,6 +160,7 @@ export default function GymListPage() {
       <GymListFound
         gyms={gymData}
         favoriteGymIds={favoriteGymIds}
+        favoriteGyms={favoriteGyms}
         onToggleFavorite={toggleFavorite}
       />
       <Outlet />

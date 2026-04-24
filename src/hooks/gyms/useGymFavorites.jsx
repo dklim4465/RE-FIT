@@ -1,36 +1,79 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-const STORAGE_KEY = "favoriteGymIds";
+const FAVORITE_IDS_STORAGE_KEY = "favoriteGymIds";
+const FAVORITE_GYMS_STORAGE_KEY = "favoriteGyms";
+
+const readJsonStorage = (key, fallback) => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch (error) {
+    console.error(`Failed to parse ${key}:`, error);
+    return fallback;
+  }
+};
 
 export const useGymFavorites = () => {
-  const [favoriteGymIds, setFavoriteGymIds] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      // 저장된 ID들을 문자열 배열로 강제 변환
-      return stored ? JSON.parse(stored).map((id) => String(id)) : [];
-    } catch (error) {
-      console.error("로컬 스토리지 파싱 에러:", error);
-      return [];
-    }
-  });
+  const [favoriteGymIds, setFavoriteGymIds] = useState(() =>
+    readJsonStorage(FAVORITE_IDS_STORAGE_KEY, []).map((id) => String(id))
+  );
+  const [favoriteGyms, setFavoriteGyms] = useState(() =>
+    readJsonStorage(FAVORITE_GYMS_STORAGE_KEY, [])
+  );
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favoriteGymIds));
+    localStorage.setItem(
+      FAVORITE_IDS_STORAGE_KEY,
+      JSON.stringify(favoriteGymIds)
+    );
   }, [favoriteGymIds]);
 
-  const toggleFavorite = useCallback((gymId) => {
+  useEffect(() => {
+    localStorage.setItem(FAVORITE_GYMS_STORAGE_KEY, JSON.stringify(favoriteGyms));
+  }, [favoriteGyms]);
+
+  const toggleFavorite = useCallback((gymOrId) => {
+    const gymId = typeof gymOrId === "object" ? gymOrId?.id : gymOrId;
     if (!gymId) return;
 
-    // 들어오는 ID도 무조건 문자열로 변환하여 비교
     const targetId = String(gymId);
 
-    setFavoriteGymIds((prev) => {
-      const isFavorite = prev.includes(targetId);
+    setFavoriteGymIds((prevIds) => {
+      const isFavorite = prevIds.includes(targetId);
+
+      setFavoriteGyms((prevGyms) => {
+        if (isFavorite) {
+          return prevGyms.filter((gym) => String(gym.id) !== targetId);
+        }
+
+        if (typeof gymOrId !== "object" || !gymOrId?.id) {
+          return prevGyms;
+        }
+
+        return [
+          { ...gymOrId, id: targetId },
+          ...prevGyms.filter((gym) => String(gym.id) !== targetId),
+        ];
+      });
+
       return isFavorite
-        ? prev.filter((id) => id !== targetId)
-        : [...prev, targetId];
+        ? prevIds.filter((id) => id !== targetId)
+        : [...prevIds, targetId];
     });
   }, []);
 
-  return { favoriteGymIds, toggleFavorite };
+  const rememberFavoriteGym = useCallback((gym) => {
+    if (!gym?.id) return;
+
+    const targetId = String(gym.id);
+    setFavoriteGyms((prevGyms) => {
+      if (prevGyms.some((storedGym) => String(storedGym.id) === targetId)) {
+        return prevGyms;
+      }
+
+      return [{ ...gym, id: targetId }, ...prevGyms];
+    });
+  }, []);
+
+  return { favoriteGymIds, favoriteGyms, toggleFavorite, rememberFavoriteGym };
 };
