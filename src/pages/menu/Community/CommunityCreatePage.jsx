@@ -175,3 +175,6 @@ export default function CommunityCreatePage() {
     </div>
   );
 }
+
+// 이 페이지에 오류나도 커뮤니티 돌아가는데 문제없음
+// 커뮤니티리스트페이지가 주된 페이지
