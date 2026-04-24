@@ -15,7 +15,7 @@ export const useGymFilter = (initialGyms) => {
       result = result.filter((gym) => gym.name.includes(search));
     }
 
-    // 2. 지점순 정렬
+    // 2. 지점순 정렬-> 기존 지점순 + 가나다순/거리순 확장
     result.sort((a, b) => {
       const getNum = (name) => {
         const match = name.match(/(\d+)호점/);
