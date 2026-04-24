@@ -1,17 +1,11 @@
 import { useNavigate } from "react-router-dom";
 
-export default function NearbyGymList({
-  nearbyGyms,
-  helperMessage,
-}) {
+export default function NearbyGymList({ nearbyGyms, helperMessage }) {
   const navigate = useNavigate();
 
   return (
     <section className="nearby-gyms-section">
-      <div className="nearby-gyms-header">
-        <h3 className="nearby-gyms-title">근처 헬스장 5곳</h3>
-        <p className="nearby-gyms-helper">{helperMessage}</p>
-      </div>
+      <div className="nearby-gyms-header"></div>
 
       <div className="nearby-gyms-list">
         {nearbyGyms.length > 0 ? (
@@ -38,7 +32,7 @@ export default function NearbyGymList({
           ))
         ) : (
           <p className="nearby-gyms-empty">
-            위치를 선택하면 주변 헬스장 5곳이 여기에 표시됩니다.
+            위치를 선택하면 주변 헬스장 3곳이 여기에 표시됩니다.
           </p>
         )}
       </div>

@@ -1,5 +1,6 @@
 const USERS_STORAGE_KEY = "refit_users";
 
+//회원 가입 로직
 function readUsers() {
   try {
     const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);

@@ -67,6 +67,7 @@ export const useListPage = (initialGyms) => {
   return {
     inputText,
     setInputText,
+    allFilteredGyms: filteredGyms,
     filteredGyms: filteredGyms.slice(0, page * itemsPerPage),
     sortType,
     selectedRegion,
