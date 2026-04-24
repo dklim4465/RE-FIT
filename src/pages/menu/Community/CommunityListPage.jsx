@@ -56,7 +56,11 @@ export default function CommunityListPage() {
     if (editId) {
       nextPosts = posts.map((post) =>
         post.id === editId
-          ? { ...post, title: title.trim(), content: content.trim() }
+          ? {
+              ...post,
+              title: title.trim(),
+              content: content.trim(),
+            }
           : post
       );
     } else {
@@ -66,6 +70,7 @@ export default function CommunityListPage() {
           title: title.trim(),
           content: content.trim(),
           date: now,
+          likes: 0,
         },
         ...posts,
       ];
@@ -86,8 +91,18 @@ export default function CommunityListPage() {
     savePosts(posts.filter((post) => post.id !== id));
   };
 
+  const handleLike = (id) => {
+    const nextPosts = posts.map((post) =>
+      post.id === id ? { ...post, likes: (post.likes || 0) + 1 } : post
+    );
+
+    savePosts(nextPosts);
+  };
+
   if (loading) {
-    return <div style={{ textAlign: "center", padding: 40 }}>불러오는 중...</div>;
+    return (
+      <div style={{ textAlign: "center", padding: 40 }}>불러오는 중...</div>
+    );
   }
 
   return (
@@ -136,14 +151,19 @@ export default function CommunityListPage() {
             }}
           >
             <h3 style={{ marginBottom: "8px" }}>{post.title}</h3>
+
             {post.date && (
               <p style={{ marginBottom: "8px", color: "#666" }}>{post.date}</p>
             )}
+
             <p style={{ whiteSpace: "pre-wrap", marginBottom: "12px" }}>
               {post.content}
             </p>
 
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button onClick={() => handleLike(post.id)}>
+                좋아요 {post.likes || 0}
+              </button>
               <button onClick={() => handleEdit(post)}>수정</button>
               <button onClick={() => handleDelete(post.id)}>삭제</button>
             </div>
