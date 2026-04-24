@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import GymListFound from "./GymListFound";
 import Papa from "papaparse";
-// 추가 찜하기 기능을 사용하기 위해 훅 임포트
 import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 
 const CSV_FILES = ["/gym_data.csv", "/gym_data2.csv"];
@@ -29,6 +28,7 @@ const getRegionFromAddress = (address, sourceName) => {
   return "기타";
 };
 
+// --- 수정된 부분: 실제 데이터 + 가상 상세 정보 결합 ---
 const mapGymRow = (row, index, sourceName) => {
   const name = getRowValue(row, ["상호", "상호명", "업체명"]);
   const address = getRowValue(row, [
@@ -37,15 +37,27 @@ const mapGymRow = (row, index, sourceName) => {
     "지번주소",
     "소재지(지번)",
   ]);
-  const category = getRowValue(row, ["업종"]);
+  const category = getRowValue(row, ["업종"]) || "헬스장";
   const rawId = getRowValue(row, ["연번", "번호", "id"]);
 
   return {
+    // 1. 실제 데이터 (목록에 표시됨)
     id: rawId || `${sourceName}-${index + 1}`,
     name: normalizeText(name),
     address: normalizeText(address),
-    category,
     region: getRegionFromAddress(address, sourceName),
+    category,
+
+    // 2. 가상 상세 데이터 (상세 페이지에서 용산구처럼 보이게 함)
+    // 상세 페이지 컴포넌트에서 사용하는 변수명과 일치시켜주세요.
+    phone: "02-1234-5678",
+    description:
+      "쾌적한 시설과 최신 기구를 갖춘 지역 최고의 피트니스 센터입니다. 전문가의 PT 서비스를 경험해보세요.",
+    openingHours: "평일 06:00 ~ 23:00 / 주말 09:00 ~ 18:00",
+    link: "https://map.naver.com", // 외부링크 연결용
+    imageUrl: `https://loremflickr.com/400/300/gym?lock=${index}`, // 업체별 랜덤 이미지
+
+    // 추가 레이아웃용 데이터
     distance: index + 1,
     isDiscount: (index + 1) % 2 === 0,
     discountLabel: "오늘의 할인!",
@@ -55,7 +67,6 @@ const mapGymRow = (row, index, sourceName) => {
 
 export default function GymListPage() {
   const [gymData, setGymData] = useState([]);
-  // 추가 찜 데이터와 토글 함수를 여기서 관리합니다.
   const { favoriteGymIds, toggleFavorite } = useGymFavorites();
 
   useEffect(() => {
@@ -75,15 +86,25 @@ export default function GymListPage() {
               .filter((gym) => gym.name && gym.address);
           })
         );
+
         const allRealData = datasets.flat();
-        const dummyData = Array.from({ length: 5000 }, (_, i) => ({
+
+        // 가상 데이터 500개 생성 (기본 구조를 실제 데이터와 동일하게)
+        const dummyData = Array.from({ length: 500 }, (_, i) => ({
           id: `dummy-${i}`,
-          name: `[테스트] 파워 헬스장 ${i + 1}호점`,
+          name: `[가상] 파워 헬스장 ${i + 1}호점`,
           address:
             i % 2 === 0 ? "서울시 성동구 행당동" : "서울시 용산구 한강로",
           region: i % 2 === 0 ? "성동구" : "용산구",
+          category: "헬스장",
+          phone: "010-0000-0000",
+          description: "이 데이터는 테스트용 가상 데이터입니다.",
+          openingHours: "24시간 운영",
+          link: "https://www.naver.com",
+          imageUrl: `https://loremflickr.com/400/300/fitness?lock=${i}`,
           distance: 100 + i,
         }));
+
         setGymData([...allRealData, ...dummyData]);
       } catch (err) {
         console.error("데이터 로딩 실패:", err);
@@ -94,7 +115,6 @@ export default function GymListPage() {
 
   return (
     <section className="page-placeholder">
-      {/*수정 GymListFound에 필요한 props를 모두 전달합니다. */}
       <GymListFound
         gyms={gymData}
         favoriteGymIds={favoriteGymIds}
