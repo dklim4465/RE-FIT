@@ -6,7 +6,6 @@ const DEFAULT_OLLAMA_MODEL = "llama3.2";
 const OLLAMA_URL = `${
   import.meta.env.VITE_OLLAMA_BASE_URL?.trim() || DEFAULT_OLLAMA_BASE_URL
 }/api/generate`;
-//둘중에 있는걸 받아라
 const OLLAMA_MODEL =
   import.meta.env.VITE_OLLAMA_MODEL?.trim() || DEFAULT_OLLAMA_MODEL;
 const STORAGE_KEY = "ai-diet-plans";
