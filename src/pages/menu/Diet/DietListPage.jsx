@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 const OLLAMA_URL = "http://localhost:11434/api/generate";
 const STORAGE_KEY = "ai-diet-plans";
 const KOREAN_ONLY_NOTICE =
-  "응답은 반드시 자연스러운 한국어로만 작성하세요. 영어, 로마자, 외래어 표기를 최대한 사용하지 말고, 필요한 경우 한국어 표현으로 바꿔 쓰세요.";
+  "응답은 반드시 자연스러운 한국어로만 작성하세요. 영어, 로마자, 외래어 표기를 절대로 사용하지 말고, 필요한 경우 한국어 표현으로 바꿔 쓰세요.";
 
 export default function DietListPage() {
   const [goal, setGoal] = useState("체중 감량");
@@ -71,9 +71,10 @@ export default function DietListPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3",
+          model: "llama3.2",
           system: KOREAN_ONLY_NOTICE,
-          prompt: `목표: ${goal}, 재료: ${ingredients || "제한 없음"}. 하루 식단을 한국어로 짜줘.`,
+          prompt: `목표: ${goal}, 재료: ${ingredients || "제한 없음"}. 하루 식단을 한국어로 짜줘. ("",'',)를 사용하지 말고 목표를 5줄 이내로 작성해줘
+          재료도 갯수로 해줘 무조건 한국어로만 작성해줘`,
           stream: false,
         }),
       });
