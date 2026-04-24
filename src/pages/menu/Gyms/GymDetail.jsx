@@ -14,7 +14,7 @@ const GymDetail = () => {
   // ---------------------------------------------------------
   const gym = location.state?.gym;
 
-  const isFavorite = favoriteGymIds.includes(gym?.id);
+  const isFavorite = gym ? favoriteGymIds.includes(String(gym.id)) : false;
 
   const goToFavoriteList = () => {
     navigate("/gyms", { state: { showFavorites: true } });

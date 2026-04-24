@@ -15,6 +15,7 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
   const {
     inputText,
     setInputText,
+    allFilteredGyms,
     filteredGyms,
     sortType,
     selectedRegion,
@@ -23,6 +24,11 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
     handleSearch,
     updateParams,
   } = useListPage(gyms);
+
+  const favoriteGymIdSet = useMemo(
+    () => new Set(favoriteGymIds.map((id) => String(id))),
+    [favoriteGymIds]
+  );
 
   // 추가 상세 페이지에서 '목록 확인'을 눌러 이동했을 때 필터를 자동으로 켜주는 로직
   useEffect(() => {
@@ -39,9 +45,9 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
   // ---------------------------------------------------------
   const displayGyms = useMemo(() => {
     return showOnlyFavorites
-      ? filteredGyms.filter((gym) => favoriteGymIds.includes(gym.id))
+      ? allFilteredGyms.filter((gym) => favoriteGymIdSet.has(String(gym.id)))
       : filteredGyms;
-  }, [showOnlyFavorites, filteredGyms, favoriteGymIds]);
+  }, [showOnlyFavorites, allFilteredGyms, filteredGyms, favoriteGymIdSet]);
   // ---------------------------------------------------------
 
   return (
@@ -115,7 +121,7 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
             >
               <GymItem
                 gym={gym}
-                isFavorite={favoriteGymIds.includes(gym.id)}
+                isFavorite={favoriteGymIdSet.has(String(gym.id))}
                 onToggleFavorite={onToggleFavorite}
               />
             </div>

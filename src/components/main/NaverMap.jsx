@@ -27,11 +27,8 @@ export default function NaverMap() {
     readSelectedLocation()
   );
 
-  const {
-    nearbyGyms,
-    isLoadingGyms,
-    isResolvingGyms,
-  } = useNearbyGyms(selectedLocation);
+  const { nearbyGyms, isLoadingGyms, isResolvingGyms } =
+    useNearbyGyms(selectedLocation);
 
   // 사용자가 지도에서 고른 위치를 저장하고 기준 마커를 이동
   const moveToSelectedLocation = (location) => {
@@ -89,18 +86,22 @@ export default function NaverMap() {
         markerRef.current = marker;
 
         // 지도 클릭 위치를 새 기준점으로 저장하고 근처 5곳을 다시 계산
-        clickListener = window.naver.maps.Event.addListener(map, "click", (event) => {
-          const clickedPosition = event.coord;
-          const clickedLat = clickedPosition.lat();
-          const clickedLng = clickedPosition.lng();
+        clickListener = window.naver.maps.Event.addListener(
+          map,
+          "click",
+          (event) => {
+            const clickedPosition = event.coord;
+            const clickedLat = clickedPosition.lat();
+            const clickedLng = clickedPosition.lng();
 
-          moveToSelectedLocation({
-            lat: clickedLat,
-            lng: clickedLng,
-            source: "manual",
-            address: getManualLocationLabel(clickedLat, clickedLng),
-          });
-        });
+            moveToSelectedLocation({
+              lat: clickedLat,
+              lng: clickedLng,
+              source: "manual",
+              address: getManualLocationLabel(clickedLat, clickedLng),
+            });
+          }
+        );
 
         if (isMounted) {
           setIsMapReady(true);
@@ -228,6 +229,9 @@ export default function NaverMap() {
   return (
     <section className="naver-map-layout">
       {error && <p className="naver-map-error">{error}</p>}
+      {!selectedLocation && (
+        <p className="naver-map-select-message">위치를 선택해주세요</p>
+      )}
 
       <div className="naver-map-board">
         {!isMapReady && (

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { calculateDistanceKm } from "../../utils/locationStorage";
 import { enrichGymsWithCoordinates, loadGymData } from "../../utils/gymData";
 
-const NEARBY_GYM_LIMIT = 5;
+const NEARBY_GYM_LIMIT = 3;
 
 function getNearbyGyms(gyms, selectedLocation) {
   if (!selectedLocation) {
@@ -10,9 +10,7 @@ function getNearbyGyms(gyms, selectedLocation) {
   }
 
   return gyms
-    .filter(
-      (gym) => typeof gym.lat === "number" && typeof gym.lng === "number"
-    )
+    .filter((gym) => typeof gym.lat === "number" && typeof gym.lng === "number")
     .map((gym) => ({
       ...gym,
       distance: Number(
