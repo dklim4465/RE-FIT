@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
-const OLLAMA_URL = "http://localhost:11434/api/generate";
+const DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
+const DEFAULT_OLLAMA_MODEL = "llama3.2";
+const OLLAMA_URL = `${
+  import.meta.env.VITE_OLLAMA_BASE_URL?.trim() || DEFAULT_OLLAMA_BASE_URL
+}/api/generate`;
+const OLLAMA_MODEL =
+  import.meta.env.VITE_OLLAMA_MODEL?.trim() || DEFAULT_OLLAMA_MODEL;
 const STORAGE_KEY = "ai-diet-plans";
 const KOREAN_ONLY_NOTICE =
   "응답은 반드시 자연스러운 한국어로만 작성하세요. 영어, 로마자, 외래어 표기를 최대한 사용하지 말고, 필요한 경우 한국어 표현으로 바꿔 쓰세요.";
@@ -69,7 +75,7 @@ export default function DietListPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3",
+          model: OLLAMA_MODEL,
           system: KOREAN_ONLY_NOTICE,
           prompt: nextPrompt,
           stream: false,
