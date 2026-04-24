@@ -10,6 +10,7 @@ const HomePage = lazy(() => import("../pages/Home/HomePage"));
 const LoginPage = lazy(() => import("../pages/Login/LoginPage"));
 const SignupPage = lazy(() => import("../pages/Signup/SignupPage"));
 const GymListPage = lazy(() => import("../pages/menu/Gyms/GymListPage"));
+const GymDetail = lazy(() => import("../pages/menu/Gyms/GymDetail"));
 const AiRoutinePage = lazy(
   () => import("../pages/menu/AiRoutine/AiRoutinePage")
 );
@@ -68,6 +69,7 @@ export default function AppRouter() {
           {/* 헬스탭 아마 지도랑 헬스탭은 합칠거같아요*/}
           <Route path="/gyms" element={<GymListPage />} />
           <Route path="/gyms/found" element={<GymListFound />} />
+          <Route path="/gym/:id" element={<GymDetail />} />
 
           {/* 루틴 탭 */}
           <Route path="/ai-routine" element={<AiRoutinePage />}>

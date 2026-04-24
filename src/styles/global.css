@@ -134,12 +134,50 @@ button {
   backdrop-filter: blur(18px);
 }
 
-.home-header {
+.home-header,
+.service-header {
+  position: sticky;
+  top: 12px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 40px 20px;
+  padding: 20px 20px;
+  border: 1px solid transparent;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+
+  transition:
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    opacity 0.24s ease;
+}
+
+.home-header.is-background-visible,
+.service-header.is-background-visible {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(124, 135, 255, 0.14);
+  box-shadow: var(--shadow-soft);
+  opacity: 1;
+}
+
+.home-header.is-background-hidden,
+.service-header.is-background-hidden {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0.5;
+}
+.brand-logo,
+.home-login-button {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.home-header.is-floating,
+.service-header.is-floating {
+  padding-block: 20px;
 }
 
 .home-header-left,
@@ -204,11 +242,12 @@ button {
     background-color 0.2s ease;
 }
 
-.home-login-button {
+.home-login-button,
+.service-login-box {
   letter-spacing: -0.1em;
 }
 /* .home-login-button, */
-.service-login-box,
+/* .service-login-box, */
 .auth-back-link,
 .home-secondary-link,
 .naver-map-search button,
@@ -466,7 +505,7 @@ button {
   border-radius: 28px;
   display: grid;
   gap: 14px;
-  align-content: space-between;
+  align-items: center;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.96) 0%,
@@ -515,27 +554,20 @@ button {
   padding: 16px 20px;
 }
 
-.service-header > :first-child {
-  justify-self: start;
+.service-header-spacer {
+  min-width: 0;
 }
 
-.service-header > :nth-child(2) {
-  justify-self: center;
-}
-
-.service-header > :last-child {
-  justify-self: end;
-}
-
-.service-header-brand {
+.service-header-actions {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  justify-self: end;
+  align-items: flex-start;
 }
 
 .service-logo-box {
   min-width: 292px;
   min-height: 60px;
+  justify-self: center;
 }
 
 .service-main-box {
@@ -785,6 +817,16 @@ button {
   padding: 20px;
 }
 
+.naver-map-error {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 240, 240, 0.9);
+  color: #b42318;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .naver-map-text-box {
   min-height: 76px;
   border-radius: 24px;
@@ -836,7 +878,7 @@ button {
 .naver-map-board {
   position: relative;
   margin-top: 14px;
-  max-height: 700px;
+  max-height: 500px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: inset 0 0 0 1px rgba(124, 135, 255, 0.12);
@@ -877,6 +919,204 @@ button {
   font-weight: 800;
   text-align: center;
   z-index: 1;
+}
+
+.nearby-gyms-section {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.nearby-gyms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nearby-gyms-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.nearby-gyms-helper {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.nearby-gyms-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nearby-gyms-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.nearby-gyms-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(79, 70, 229, 0.22);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.nearby-gyms-item:focus-visible {
+  outline: 0;
+  border-color: rgba(79, 70, 229, 0.42);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.nearby-gyms-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.nearby-gyms-name {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.nearby-gyms-distance {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.nearby-gyms-address {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.nearby-gyms-empty {
+  margin: 0;
+  padding: 18px 16px;
+  border-radius: 16px;
+  background-color: #f8fafc;
+  color: #64748b;
+  text-align: center;
+}
+
+.mock-ad-banner {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px dashed rgba(98, 109, 244, 0.28);
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(98, 109, 244, 0.16),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(243, 245, 255, 0.96) 100%
+    );
+  box-shadow: 0 16px 36px rgba(64, 72, 138, 0.08);
+}
+
+.mock-ad-banner--banner {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.mock-ad-banner--square {
+  min-height: 240px;
+  align-content: space-between;
+}
+
+.mock-ad-banner--inline {
+  padding: 16px 18px;
+  border-radius: 20px;
+}
+
+.mock-ad-banner__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mock-ad-banner__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(98, 109, 244, 0.12);
+  color: #4f46e5;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mock-ad-banner__sponsor {
+  color: #667085;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mock-ad-banner__body {
+  display: grid;
+  gap: 8px;
+}
+
+.mock-ad-banner__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.mock-ad-banner__description {
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.mock-ad-banner__cta {
+  justify-self: start;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(17, 18, 24, 0.92);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.mock-ad-banner--banner .mock-ad-banner__body {
+  grid-column: 1 / 2;
+}
+
+.mock-ad-banner--banner .mock-ad-banner__cta {
+  grid-column: 2 / 3;
+  grid-row: 1 / span 2;
+  justify-self: end;
 }
 
 .ai-result {
@@ -1051,13 +1291,22 @@ button {
   }
 
   .service-header {
-    grid-template-columns: 1fr;
-    justify-items: stretch;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "logo actions";
+    align-items: start;
   }
 
-  .service-header-brand {
-    justify-content: space-between;
-    flex-wrap: wrap;
+  .service-header-spacer {
+    display: none;
+  }
+
+  .service-logo-box {
+    grid-area: logo;
+    justify-self: start;
+  }
+
+  .service-header-actions {
+    grid-area: actions;
   }
 }
 
@@ -1086,6 +1335,22 @@ button {
     min-width: 100%;
   }
 
+  .service-header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "actions"
+      "logo";
+    justify-items: stretch;
+  }
+
+  .service-logo-box {
+    justify-self: center;
+  }
+
+  .service-header-actions {
+    justify-self: end;
+  }
+
   .brand-logo {
     width: 204px;
   }
@@ -1101,6 +1366,12 @@ button {
   .home-menu-grid,
   .naver-map-search {
     grid-template-columns: 1fr;
+  }
+
+  .nearby-gyms-header,
+  .nearby-gyms-item-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .home-hero-copy,
