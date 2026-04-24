@@ -3,6 +3,67 @@ import React, { useEffect, useState } from "react";
 const STORAGE_KEY = "community-posts";
 const POSTS_PER_PAGE = 10;
 
+export const generateDummyPosts = (count = 30) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: Date.now() + i,
+    title: randomItem(TITLES),
+    content: randomItem(CONTENTS),
+    date: randomDate(),
+    likes: Math.floor(Math.random() * 20),
+    author: randomItem(NICKNAMES),
+  }));
+};
+
+const TITLES = [
+  "헬스장 처음 가는데 뭐부터 해야함?",
+  "단백질 보충제 추천좀",
+  "하체하고 다음날 걷기 불가능ㅋㅋ",
+  "운동 루틴 평가좀 해주세요",
+  "다이어트 식단 이거 괜찮나요?",
+  "헬린이 질문좀요",
+  "체지방 줄이려면 유산소 얼마나 해야함?",
+  "운동 시간 언제가 제일 좋음?",
+  "벌크업 식단 팁 좀",
+  "운동 쉬는날 뭐함?",
+];
+
+const CONTENTS = [
+  "완전 초보인데 어떻게 시작해야 할지 모르겠어요",
+  "요즘 이거 먹고 있는데 괜찮은지 궁금함",
+  "이거 정상인가요? 다들 이런가요?",
+  "효과 본 방법 있으면 공유좀",
+  "시간이 없어서 짧게 하고 싶은데 방법 있을까요",
+  "헬스 3일차인데 너무 힘듦",
+  "꾸준히 하는게 제일 어렵네요",
+  "식단 관리 너무 빡셈",
+  "운동 재미 붙이는 방법 없나요",
+  "이 루틴 괜찮은지 피드백 부탁",
+];
+
+const NICKNAMES = [
+  "헬린이123",
+  "근육돼지",
+  "다이어터",
+  "운동하는직장인",
+  "벌크업중",
+  "헬스왕초보",
+  "프로틴중독",
+  "하체파괴자",
+  "유산소싫어",
+  "득근가즈아",
+];
+
+const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const randomDate = () => {
+  const start = new Date(2026, 3, 1);
+  const end = new Date();
+  const date = new Date(start.getTime() + Math.random() * (end - start));
+  return date.toLocaleDateString("ko-KR");
+};
+
+const DUMMY_POSTS = generateDummyPosts(30);
+
 export default function CommunityListPage() {
   const [posts, setPosts] = useState([]);
   const [title, setTitle] = useState("");
@@ -22,6 +83,9 @@ export default function CommunityListPage() {
       const savedPosts = localStorage.getItem(STORAGE_KEY);
       if (savedPosts) {
         setPosts(JSON.parse(savedPosts));
+      } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DUMMY_POSTS));
+        setPosts(DUMMY_POSTS);
       }
     } catch (error) {
       console.error("게시글을 불러오는 중 오류가 발생했습니다.", error);
@@ -29,6 +93,8 @@ export default function CommunityListPage() {
       setLoading(false);
     }
   }, []);
+
+  localStorage.removeItem("community-posts");
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -155,7 +221,9 @@ export default function CommunityListPage() {
             {post.date && (
               <p style={{ marginBottom: "8px", color: "#666" }}>{post.date}</p>
             )}
-
+            <p style={{ color: "#888", fontSize: "14px", marginBottom: "4px" }}>
+              작성자:{post.author}
+            </p>
             <p style={{ whiteSpace: "pre-wrap", marginBottom: "12px" }}>
               {post.content}
             </p>
