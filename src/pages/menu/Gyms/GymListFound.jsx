@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"; // 수정 useEffect 추가
-import { useNavigate, useLocation } from "react-router-dom"; // 수정useLocation 추가
+import React, { useState, useEffect, useMemo } from "react"; // 수정 useMemo 추가
+import { useNavigate, useLocation } from "react-router-dom";
 import { useListPage } from "../../../hooks/gyms/useListPage";
 import GymItem from "./GymItem";
 
@@ -33,14 +33,15 @@ const GymListFound = ({ gyms, favoriteGymIds = [], onToggleFavorite }) => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
-
   // ---------------------------------------------------------
-  // 추가 최종 렌더링용 리스트 필터링
-  // 검색 결과(filteredGyms) 중에서 찜 상태인 것만 한 번 더 골라냅니다.
+  // [최적화] useMemo를 사용하여 리스트 필터링 연산을 메모이제이션합니다.
+  // 데이터가 500개 이상일 때, 검색어나 찜 상태가 변하지 않으면 재연산하지 않습니다.
   // ---------------------------------------------------------
-  const displayGyms = showOnlyFavorites
-    ? filteredGyms.filter((gym) => favoriteGymIds.includes(gym.id))
-    : filteredGyms;
+  const displayGyms = useMemo(() => {
+    return showOnlyFavorites
+      ? filteredGyms.filter((gym) => favoriteGymIds.includes(gym.id))
+      : filteredGyms;
+  }, [showOnlyFavorites, filteredGyms, favoriteGymIds]);
   // ---------------------------------------------------------
 
   return (
