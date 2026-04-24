@@ -28,10 +28,10 @@ function getRowValue(row, keys) {
 function mapGymRow(row, index, sourceName) {
   const name = getRowValue(row, ["상호", "상호명", "업체명"]);
   const address = getRowValue(row, [
-    "도로명주소",
-    "소재지(도로명)",
     "지번주소",
     "소재지(지번)",
+    "소재지(지번주소)",
+    "소재지(지번주소)",
   ]);
   const rawId = getRowValue(row, ["연번", "번호", "id"]);
 
@@ -59,7 +59,7 @@ export async function loadGymData() {
       });
 
       if (parsed.errors.length > 0) {
-        console.error(`${filePath} CSV 파싱 에러:`, parsed.errors);
+        console.error(`${filePath} CSV 파싱 오류:`, parsed.errors);
       }
 
       return parsed.data
@@ -99,9 +99,13 @@ export async function enrichGymsWithCoordinates(gyms) {
         try {
           const address = await geocodeAddress(gym.address);
           const location = {
-            lat: Number(address.y),
-            lng: Number(address.x),
-            label: address.roadAddress || address.jibunAddress || gym.address,
+            lat: Number(address.y || address.point?.y),
+            lng: Number(address.x || address.point?.x),
+            label:
+              address.roadAddress ||
+              address.jibunAddress ||
+              address.address ||
+              gym.address,
           };
 
           saveCachedGymLocation(gym.address, location);
@@ -112,7 +116,7 @@ export async function enrichGymsWithCoordinates(gyms) {
             lng: location.lng,
           };
         } catch (error) {
-          console.error(`헬스장 주소 좌표 변환 실패: ${gym.address}`, error);
+          console.warn(`헬스장 주소 좌표 변환 건너뜀: ${gym.address}`, error);
           return gym;
         }
       })
