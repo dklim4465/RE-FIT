@@ -84,12 +84,12 @@ const Popup = ({ onClose, onBlock }) => {
         >
           RE-FIT이 추천하는 헬스장에서 사용 가능합니다
           <br />
-          지금 <strong>헬스장</strong> 확인해보세요!
+          <strong>헬스장에서</strong> 확인해보세요!
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <button onClick={handleGoToGyms} style={popupStyles.mainButton}>
-            헬스장 찾고 쿠폰 쓰기
+            🔍 혜택받고 찾아보기
           </button>
 
           <div
