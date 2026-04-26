@@ -1,81 +1,136 @@
 import React, { useEffect, useState } from "react";
 
 const STORAGE_KEY = "community-posts";
+const POSTS_PER_PAGE = 10;
 
-// ✅ 더미 데이터 3개
-const DUMMY_POSTS = [
-  {
-    id: 1,
-    title: "헬스장 처음 가는데 뭐부터 해야함?",
-    content: "완전 초보인데 기구부터 해야됨?",
-    date: "2026.04.01",
-    likes: 3,
-  },
-  {
-    id: 2,
-    title: "단백질 보충제 추천좀",
-    content: "가성비 좋은 거 뭐 있음?",
-    date: "2026.04.02",
-    likes: 8,
-  },
-  {
-    id: 3,
-    title: "하체하고 다음날 걷기 불가능ㅋㅋ",
-    content: "이거 정상인가요?",
-    date: "2026.04.03",
-    likes: 5,
-  },
+export const generateDummyPosts = (count = 30) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: Date.now() + i,
+    title: randomItem(TITLES),
+    content: randomItem(CONTENTS),
+    date: randomDate(),
+    likes: Math.floor(Math.random() * 20),
+    author: randomItem(NICKNAMES),
+  }));
+};
+
+const TITLES = [
+  "헬스장 처음 가는데 뭐부터 해야함?",
+  "단백질 보충제 추천좀",
+  "하체하고 다음날 걷기 불가능ㅋㅋ",
+  "운동 루틴 평가좀 해주세요",
+  "다이어트 식단 이거 괜찮나요?",
+  "헬린이 질문좀요",
+  "체지방 줄이려면 유산소 얼마나 해야함?",
+  "운동 시간 언제가 제일 좋음?",
+  "벌크업 식단 팁 좀",
+  "운동 쉬는날 뭐함?",
 ];
 
-export default function CommunityPage() {
+const CONTENTS = [
+  "완전 초보인데 어떻게 시작해야 할지 모르겠어요",
+  "요즘 이거 먹고 있는데 괜찮은지 궁금함",
+  "이거 정상인가요? 다들 이런가요?",
+  "효과 본 방법 있으면 공유좀",
+  "시간이 없어서 짧게 하고 싶은데 방법 있을까요",
+  "헬스 3일차인데 너무 힘듦",
+  "꾸준히 하는게 제일 어렵네요",
+  "식단 관리 너무 빡셈",
+  "운동 재미 붙이는 방법 없나요",
+  "이 루틴 괜찮은지 피드백 부탁",
+];
+
+const NICKNAMES = [
+  "헬린이123",
+  "근육돼지",
+  "다이어터",
+  "운동하는직장인",
+  "벌크업중",
+  "헬스왕초보",
+  "프로틴중독",
+  "하체파괴자",
+  "유산소싫어",
+  "득근가즈아",
+];
+
+const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const randomDate = () => {
+  const start = new Date(2026, 3, 1);
+  const end = new Date();
+  const date = new Date(start.getTime() + Math.random() * (end - start));
+  return date.toLocaleDateString("ko-KR");
+};
+
+const DUMMY_POSTS = generateDummyPosts(30);
+
+export default function CommunityListPage() {
   const [posts, setPosts] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editId, setEditId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // ✅ 최초 로딩 (핵심 수정 완료)
+  const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
+  const currentPosts = posts.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+  );
+
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-
-      if (saved) {
-        setPosts(JSON.parse(saved));
+      const savedPosts = localStorage.getItem(STORAGE_KEY);
+      if (savedPosts) {
+        setPosts(JSON.parse(savedPosts));
       } else {
-        // 👉 더미 데이터 넣기
         localStorage.setItem(STORAGE_KEY, JSON.stringify(DUMMY_POSTS));
         setPosts(DUMMY_POSTS);
       }
-    } catch (e) {
-      console.error("데이터 로딩 오류", e);
-      setPosts(DUMMY_POSTS);
+    } catch (error) {
+      console.error("게시글을 불러오는 중 오류가 발생했습니다.", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ✅ 저장 함수
-  const savePosts = (data) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    setPosts(data);
+  localStorage.removeItem("community-posts");
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const savePosts = (nextPosts) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPosts));
+    setPosts(nextPosts);
   };
 
-  // ✅ 작성 / 수정
+  const resetForm = () => {
+    setTitle("");
+    setContent("");
+    setEditId(null);
+  };
+
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) return;
 
     const now = new Date().toLocaleDateString("ko-KR");
-
-    let next;
+    let nextPosts;
 
     if (editId) {
-      next = posts.map((p) =>
-        p.id === editId
-          ? { ...p, title: title.trim(), content: content.trim() }
-          : p
+      nextPosts = posts.map((post) =>
+        post.id === editId
+          ? {
+              ...post,
+              title: title.trim(),
+              content: content.trim(),
+            }
+          : post
       );
     } else {
-      next = [
+      nextPosts = [
         {
           id: Date.now(),
           title: title.trim(),
@@ -87,130 +142,117 @@ export default function CommunityPage() {
       ];
     }
 
-    savePosts(next);
-    setTitle("");
-    setContent("");
-    setEditId(null);
+    savePosts(nextPosts);
+    resetForm();
+    setCurrentPage(1);
   };
 
-  // ✅ 수정 버튼
   const handleEdit = (post) => {
     setTitle(post.title);
     setContent(post.content);
     setEditId(post.id);
   };
 
-  // ✅ 삭제
   const handleDelete = (id) => {
-    const next = posts.filter((p) => p.id !== id);
-    savePosts(next);
+    savePosts(posts.filter((post) => post.id !== id));
   };
 
-  // ✅ 좋아요
   const handleLike = (id) => {
-    const next = posts.map((p) =>
-      p.id === id ? { ...p, likes: (p.likes || 0) + 1 } : p
+    const nextPosts = posts.map((post) =>
+      post.id === id ? { ...post, likes: (post.likes || 0) + 1 } : post
     );
-    savePosts(next);
+
+    savePosts(nextPosts);
   };
 
-  if (loading) return <div>불러오는 중...</div>;
-
-  // ✅ 스타일 (JSX 내부)
-  const btn = {
-    padding: "8px 12px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-  };
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: 40 }}>불러오는 중...</div>
+    );
+  }
 
   return (
-    <div style={{ width: "600px", margin: "0 auto", padding: 20 }}>
+    <div style={{ width: "600px", margin: "0 auto", padding: "24px 0" }}>
       <h2>운동 커뮤니티 게시판</h2>
 
-      {/* 작성 영역 */}
       <input
         placeholder="제목"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={{ width: "100%", marginBottom: 8, padding: 8 }}
+        style={{ width: "100%", marginBottom: "8px", padding: "10px" }}
       />
 
       <textarea
         placeholder="내용"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        style={{ width: "100%", height: 100, padding: 8 }}
+        style={{
+          width: "100%",
+          height: "120px",
+          marginBottom: "8px",
+          padding: "10px",
+        }}
       />
 
-      <div style={{ marginBottom: 20 }}>
-        <button
-          onClick={handleSubmit}
-          style={{ ...btn, background: "#6c63ff", color: "#fff" }}
-        >
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+        <button onClick={handleSubmit}>
           {editId ? "수정하기" : "작성하기"}
         </button>
-
-        {editId && (
-          <button
-            onClick={() => {
-              setEditId(null);
-              setTitle("");
-              setContent("");
-            }}
-            style={{ ...btn, marginLeft: 8 }}
-          >
-            취소
-          </button>
-        )}
+        {editId && <button onClick={resetForm}>취소</button>}
       </div>
 
       <hr />
 
-      {/* 게시글 목록 */}
       {posts.length === 0 ? (
         <p>게시글이 없습니다.</p>
       ) : (
-        posts.map((post) => (
+        currentPosts.map((post) => (
           <div
             key={post.id}
             style={{
               border: "1px solid #ddd",
-              padding: 16,
-              borderRadius: 10,
-              marginBottom: 10,
-              background: "#fff",
+              borderRadius: "8px",
+              padding: "16px",
+              marginBottom: "12px",
             }}
           >
-            <h3>{post.title}</h3>
-            <p style={{ color: "#888" }}>{post.date}</p>
-            <p>{post.content}</p>
+            <h3 style={{ marginBottom: "8px" }}>{post.title}</h3>
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={() => handleLike(post.id)}
-                style={{ ...btn, background: "#eee" }}
-              >
-                👍 {post.likes}
-              </button>
+            {post.date && (
+              <p style={{ marginBottom: "8px", color: "#666" }}>{post.date}</p>
+            )}
+            <p style={{ color: "#888", fontSize: "14px", marginBottom: "4px" }}>
+              작성자:{post.author}
+            </p>
+            <p style={{ whiteSpace: "pre-wrap", marginBottom: "12px" }}>
+              {post.content}
+            </p>
 
-              <button
-                onClick={() => handleEdit(post)}
-                style={{ ...btn, background: "#6c63ff", color: "#fff" }}
-              >
-                수정
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button onClick={() => handleLike(post.id)}>
+                좋아요 {post.likes || 0}
               </button>
-
-              <button
-                onClick={() => handleDelete(post.id)}
-                style={{ ...btn, background: "red", color: "#fff" }}
-              >
-                삭제
-              </button>
+              <button onClick={() => handleEdit(post)}>수정</button>
+              <button onClick={() => handleDelete(post.id)}>삭제</button>
             </div>
           </div>
         ))
+      )}
+
+      {posts.length > 0 && (
+        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index + 1)}
+              style={{
+                fontWeight: currentPage === index + 1 ? "bold" : "normal",
+              }}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
