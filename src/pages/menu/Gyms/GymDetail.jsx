@@ -9,7 +9,6 @@ const GymDetail = () => {
   const { favoriteGymIds, toggleFavorite, rememberFavoriteGym } =
     useGymFavorites();
 
-  // state에 gym 데이터가 있으면 최우선으로 사용
   const gym = location.state?.gym;
   const isFavorite = gym ? favoriteGymIds.includes(String(gym.id)) : false;
 
@@ -19,28 +18,19 @@ const GymDetail = () => {
     }
   }, [gym, isFavorite, rememberFavoriteGym]);
 
-  const goToFavoriteList = () => {
-    navigate("/gyms", { state: { showFavorites: true } });
-  };
-
   if (!gym) {
     return (
       <div style={{ padding: "50px", textAlign: "center" }}>
         <h3>정보를 불러오는 중입니다...</h3>
-        <button onClick={() => navigate("/gyms")} style={styles.bottomBackBtn}>
-          목록으로 돌아가기
-        </button>
       </div>
     );
   }
 
-  // [중요] 데이터의 이미지가 깨졌을 때(500 에러 등) 보여줄 고화질 헬스장 이미지
-  const defaultGymImg =
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop";
+  // [수정] 상세페이지용 헬스장/덤벨 테마 고화질 이미지
+  const detailGymFallback = `https://loremflickr.com/800/600/fitness,gym,dumbbell/all?lock=${gym.id}`;
 
   return (
     <div style={styles.wrapper}>
-      {/* 헤더 영역 */}
       <div style={styles.header}>
         <button onClick={() => navigate(-1)} style={styles.backBtn}>
           {" "}
@@ -50,26 +40,23 @@ const GymDetail = () => {
       </div>
 
       <div style={styles.card}>
-        {/* 1. 이미지 영역 (onError 로직 추가) */}
         <div style={styles.imageContainer}>
           <img
-            src={gym.imageUrl || defaultGymImg}
+            src={gym.imageUrl}
             alt={gym.name}
             style={styles.mainImage}
             onError={(e) => {
-              // 브라우저 콘솔에서 본 500 에러가 발생하면 이 코드가 작동합니다.
               e.target.onerror = null;
-              e.target.src = defaultGymImg;
+              // 운동 관련 사진으로 강제 교체
+              e.target.src = detailGymFallback;
             }}
           />
           {gym.isDiscount && <span style={styles.imageBadge}>EVENT</span>}
         </div>
 
-        {/* 2. 제목 및 주소 */}
         <h1 style={styles.title}>{gym.name}</h1>
         <p style={styles.address}>📍 {gym.address}</p>
 
-        {/* 3. 정보 그리드 (거리 & 전화번호 2열 배치) */}
         <div style={styles.infoGrid}>
           <div style={styles.infoItem}>
             <span style={styles.infoLabel}>거리</span>
@@ -78,7 +65,7 @@ const GymDetail = () => {
           <div style={styles.infoItem}>
             <span style={styles.infoLabel}>문의처</span>
             <span style={styles.infoValue}>
-              📞 {gym.phone || "02-123-4567"}
+              📞 {gym.phone || "02-1234-5678"}
             </span>
           </div>
           <div style={styles.infoItem}>
@@ -91,10 +78,8 @@ const GymDetail = () => {
           </div>
         </div>
 
-        {/* 4. 버튼 영역 */}
         <div style={styles.btnGroup}>
           <button
-            type="button"
             onClick={() => toggleFavorite(gym)}
             style={{
               ...styles.favBtn,
@@ -103,17 +88,20 @@ const GymDetail = () => {
               border: isFavorite ? "1px solid #ffc9c9" : "1px solid #e9ecef",
             }}
           >
-            {isFavorite ? "❤️ 찜" : "🤍 찜"}
+            {isFavorite ? "❤️ 찜한 헬스장" : "🤍 찜하기"}
           </button>
-
           {isFavorite && (
-            <button onClick={goToFavoriteList} style={styles.listBtn}>
+            <button
+              onClick={() =>
+                navigate("/gyms", { state: { showFavorites: true } })
+              }
+              style={styles.listBtn}
+            >
               목록 확인
             </button>
           )}
         </div>
       </div>
-
       <button onClick={() => navigate("/gyms")} style={styles.bottomBackBtn}>
         전체 목록으로 돌아가기
       </button>
@@ -122,28 +110,14 @@ const GymDetail = () => {
 };
 
 const styles = {
-  wrapper: {
-    maxWidth: "480px",
-    margin: "0 auto",
-    padding: "20px",
-    backgroundColor: "#fff",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  headerTitle: {
-    fontSize: "18px",
-    fontWeight: "700",
-    marginLeft: "10px",
-  },
+  wrapper: { maxWidth: "480px", margin: "0 auto", padding: "20px" },
+  header: { display: "flex", alignItems: "center", marginBottom: "20px" },
+  headerTitle: { fontSize: "18px", fontWeight: "700", marginLeft: "10px" },
   backBtn: {
     border: "none",
     background: "none",
     fontSize: "22px",
     cursor: "pointer",
-    padding: "0",
   },
   card: {
     borderRadius: "24px",
@@ -158,11 +132,7 @@ const styles = {
     position: "relative",
     backgroundColor: "#f8f9fa",
   },
-  mainImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
+  mainImage: { width: "100%", height: "100%", objectFit: "cover" },
   imageBadge: {
     position: "absolute",
     top: "16px",
@@ -174,17 +144,8 @@ const styles = {
     fontSize: "12px",
     fontWeight: "800",
   },
-  title: {
-    fontSize: "22px",
-    fontWeight: "800",
-    margin: "24px 20px 8px 20px",
-    color: "#1a1a1a",
-  },
-  address: {
-    fontSize: "14px",
-    color: "#888",
-    margin: "0 20px 24px 20px",
-  },
+  title: { fontSize: "22px", fontWeight: "800", margin: "24px 20px 8px 20px" },
+  address: { fontSize: "14px", color: "#888", margin: "0 20px 24px 20px" },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -200,21 +161,9 @@ const styles = {
     flexDirection: "column",
     gap: "4px",
   },
-  infoLabel: {
-    fontSize: "11px",
-    color: "#adb5bd",
-    fontWeight: "600",
-  },
-  infoValue: {
-    fontSize: "13px",
-    color: "#495057",
-    fontWeight: "700",
-  },
-  btnGroup: {
-    display: "flex",
-    gap: "10px",
-    padding: "0 20px",
-  },
+  infoLabel: { fontSize: "11px", color: "#adb5bd", fontWeight: "600" },
+  infoValue: { fontSize: "13px", color: "#495057", fontWeight: "700" },
+  btnGroup: { display: "flex", gap: "10px", padding: "0 20px" },
   favBtn: {
     flex: 2,
     borderRadius: "14px",
@@ -222,7 +171,6 @@ const styles = {
     fontSize: "15px",
     fontWeight: "700",
     cursor: "pointer",
-    transition: "all 0.2s",
   },
   listBtn: {
     flex: 1,

@@ -4,13 +4,9 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
   if (!gym) return null;
   const { id, name, address, imageUrl, isDiscount } = gym;
 
-  // 1. 실제 사진 데이터가 없거나 서버 에러(500) 발생 시 보여줄 고퀄리티 기본 이미지
-  const defaultImage =
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop";
-
-  // 2. imageUrl이 null이거나 빈 문자열인 경우 우선 defaultImage를 할당
-  const thumbnailSrc =
-    imageUrl && imageUrl.trim() !== "" ? imageUrl : defaultImage;
+  // [수정] 헬스장, 덤벨 키워드에 최적화된 고정 랜덤 이미지
+  // picsum 대신 더 정확한 운동 관련 소스를 사용합니다.
+  const gymFallback = `https://loremflickr.com/300/300/gym,dumbbell,workout/all?lock=${id}`;
 
   return (
     <div
@@ -24,7 +20,6 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
         gap: "16px",
       }}
     >
-      {/* 왼쪽: 텍스트 정보 */}
       <div style={{ flex: 1, textAlign: "left" }}>
         <div
           style={{
@@ -71,7 +66,6 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
         </div>
       </div>
 
-      {/* 오른쪽: 이미지 및 할인 배지 */}
       <div
         style={{
           width: "100px",
@@ -81,7 +75,7 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
         }}
       >
         <img
-          src={thumbnailSrc}
+          src={imageUrl}
           alt={name}
           style={{
             width: "100%",
@@ -89,12 +83,11 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
             borderRadius: "16px",
             objectFit: "cover",
             backgroundColor: "#f5f5f5",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
           }}
           onError={(e) => {
-            // [중요] 콘솔의 500 에러처럼 서버에서 이미지를 못 줄 경우 여기서 교체됩니다.
-            e.target.onerror = null; // 무한 루프 방지
-            e.target.src = defaultImage;
+            e.target.onerror = null;
+            // 덤벨, 헬스장 전용 이미지로 강제 교체
+            e.target.src = gymFallback;
           }}
         />
         {isDiscount && <div style={badgeStyle}>EVENT !</div>}
