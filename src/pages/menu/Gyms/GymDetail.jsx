@@ -1,45 +1,52 @@
-import React, { useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useGymFavorites } from "../../../hooks/gyms/useGymFavorites";
 import { useAuth } from "../../../store/AuthContext";
 import GymInquiryModal from "./GymInquiryModal";
 import GymPromotionCard from "./GymPromotionCard";
 import {
-  FALLBACK_DESCRIPTION,
   buildPromotionText,
   formatPhoneNumber,
   normalizePhone,
 } from "./gymPromotion";
 
-export default function GymDetail() {
+const GymDetail = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { favoriteGymIds, toggleFavorite } = useGymFavorites();
+  const { favoriteGymIds, toggleFavorite, rememberFavoriteGym } =
+    useGymFavorites();
   const { user } = useAuth();
 
   const gym = location.state?.gym;
-  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const isFavorite = favoriteGymIds.includes(gym?.id);
+  const gymId = gym?.id ?? id;
+  const isFavorite = gym ? favoriteGymIds.includes(String(gym.id)) : false;
   const hasEventPromotion = Boolean(gym?.isDiscount);
   const promotion = useMemo(
     () => (hasEventPromotion && gym ? buildPromotionText(gym) : null),
     [gym, hasEventPromotion]
   );
 
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (gym && isFavorite) {
+      rememberFavoriteGym(gym);
+    }
+  }, [gym, isFavorite, rememberFavoriteGym]);
+
   if (!gym) {
     return (
-      <div style={{ padding: "50px", textAlign: "center" }}>정보 로딩 중...</div>
+      <div style={{ padding: "50px", textAlign: "center" }}>
+        <h3>정보를 불러오는 중입니다...</h3>
+      </div>
     );
   }
 
-  const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    gym.name
-  )}&background=7c5dfa&color=fff`;
-  const mainImageSrc = gym.imageUrl || defaultImage;
+  const detailGymFallback = `https://loremflickr.com/800/600/fitness,gym,dumbbell/all?lock=${gymId}`;
   const userName = user?.name || "회원";
 
   const openInquiryModal = () => {
@@ -80,186 +87,94 @@ export default function GymDetail() {
 
   return (
     <>
-      <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-        <div
-          style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}
-        >
+      <div style={styles.wrapper}>
+        <div style={styles.header}>
           <button
             onClick={() => navigate(-1)}
-            style={{
-              border: "none",
-              background: "none",
-              fontSize: "22px",
-              cursor: "pointer",
-            }}
+            style={styles.backBtn}
             aria-label="뒤로 가기"
           >
-            ←
+            {" "}
+            ←{" "}
           </button>
-          <h2 style={{ marginLeft: "10px", fontSize: "18px" }}>돌아가기</h2>
+          <h2 style={styles.headerTitle}>상세 정보</h2>
         </div>
 
-        <div
-          style={{
-            border: "1px solid #eee",
-            borderRadius: "20px",
-            padding: "30px",
-            boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
-            backgroundColor: "#fff",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "26px",
-              fontWeight: "800",
-              marginBottom: "10px",
-              textAlign: "left",
-            }}
-          >
-            {gym.name}
-          </h1>
-
-          <p
-            style={{
-              color: "#7a746d",
-              fontSize: "15px",
-              marginBottom: "25px",
-              textAlign: "left",
-            }}
-          >
-            📍 {gym.address}
-          </p>
-
-          <div style={{ display: "flex", gap: "10px", marginBottom: "25px" }}>
-            <button
-              onClick={() => toggleFavorite(gym.id)}
-              style={{
-                flex: 2,
-                border: "none",
-                borderRadius: "12px",
-                padding: "12px",
-                fontWeight: "700",
-                cursor: "pointer",
-                background: isFavorite ? "#ffe3e3" : "#f5f5f5",
-                color: isFavorite ? "#e03131" : "#777",
-              }}
-            >
-              {isFavorite ? "❤️ 찜!" : "🤍 찜하기"}
-            </button>
-
-            <div
-              style={{
-                flex: 1,
-                backgroundColor: "#f8f9fa",
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "13px",
-                color: "#555",
-                fontWeight: "600",
-              }}
-            >
-              📏 {gym.distance}km
-            </div>
-          </div>
-
-          <hr
-            style={{
-              border: "0",
-              borderTop: "1px solid #f1f1f1",
-              marginBottom: "25px",
-            }}
-          />
-
-          <div
-            style={{
-              textAlign: "left",
-              marginBottom: "25px",
-              borderLeft: "4px solid #7c5dfa",
-              paddingLeft: "15px",
-            }}
-          >
-            <div style={{ marginBottom: "12px" }}>
-              <span
-                style={{ fontWeight: "700", color: "#333", fontSize: "14px" }}
-              >
-                📞 문의하기
-              </span>
-              <div
-                style={{ color: "#666", fontSize: "16px", marginTop: "4px" }}
-              >
-                {gym.phone || "전화번호 확인 필요"}
-              </div>
-            </div>
-
-            <div>
-              <span
-                style={{ fontWeight: "700", color: "#333", fontSize: "14px" }}
-              >
-                ⏰ 이용시간
-              </span>
-              <div
-                style={{ color: "#666", fontSize: "16px", marginTop: "4px" }}
-              >
-                {gym.openingHours || "운영시간 확인 필요"}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ textAlign: "left", marginBottom: "25px" }}>
-            <h4
-              style={{
-                fontSize: "17px",
-                fontWeight: "700",
-                marginBottom: "12px",
-              }}
-            >
-              시설 안내
-            </h4>
-            <p style={{ fontSize: "15px", color: "#666", lineHeight: "1.7" }}>
-              {gym.description || FALLBACK_DESCRIPTION}
-            </p>
-          </div>
-
-          <div
-            style={{
-              width: "100%",
-              height: "250px",
-              borderRadius: "15px",
-              overflow: "hidden",
-              backgroundColor: "#f0f0f0",
-            }}
-          >
+        <div style={styles.card}>
+          <div style={styles.imageContainer}>
             <img
-              src={mainImageSrc}
-              alt="Gym Facility"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onError={(event) => {
-                event.currentTarget.src = defaultImage;
+              src={gym.imageUrl || detailGymFallback}
+              alt={gym.name}
+              style={styles.mainImage}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = detailGymFallback;
               }}
             />
+            {gym.isDiscount && <span style={styles.imageBadge}>EVENT</span>}
           </div>
 
-          {hasEventPromotion && promotion && (
-            <GymPromotionCard promotion={promotion} onInquiryClick={openInquiryModal} />
-          )}
-        </div>
+          <h1 style={styles.title}>{gym.name}</h1>
+          <p style={styles.address}>📍 {gym.address}</p>
 
-        <button
-          onClick={() => navigate("/gyms")}
-          style={{
-            width: "100%",
-            marginTop: "20px",
-            padding: "15px",
-            borderRadius: "12px",
-            border: "1px solid #ddd",
-            background: "#fff",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
-        >
-          목록으로 돌아가기
+          <div style={styles.infoGrid}>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>거리</span>
+              <span style={styles.infoValue}>📏 {gym.distance}km</span>
+            </div>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>문의처</span>
+              <span style={styles.infoValue}>
+                📞 {gym.phone || "02-1234-5678"}
+              </span>
+            </div>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>별점</span>
+              <span style={styles.infoValue}>⭐️ {gym.rating || "4.5"}</span>
+            </div>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>운영시간</span>
+              <span style={styles.infoValue}>
+                ⏰ {gym.openingHours || "06:00 ~ 24:00"}
+              </span>
+            </div>
+          </div>
+
+          {promotion && (
+            <div style={styles.promotionWrap}>
+              <GymPromotionCard
+                promotion={promotion}
+                onInquiryClick={openInquiryModal}
+              />
+            </div>
+          )}
+
+          <div style={styles.btnGroup}>
+            <button
+              onClick={() => toggleFavorite(gym)}
+              style={{
+                ...styles.favBtn,
+                background: isFavorite ? "#ffe3e3" : "#f8f9fa",
+                color: isFavorite ? "#e03131" : "#adb5bd",
+                border: isFavorite ? "1px solid #ffc9c9" : "1px solid #e9ecef",
+              }}
+            >
+              {isFavorite ? "❤️ 찜한 헬스장" : "🤍 찜하기"}
+            </button>
+            {isFavorite && (
+              <button
+                onClick={() =>
+                  navigate("/gyms", { state: { showFavorites: true } })
+                }
+                style={styles.listBtn}
+              >
+                목록 확인
+              </button>
+            )}
+          </div>
+        </div>
+        <button onClick={() => navigate("/gyms")} style={styles.bottomBackBtn}>
+          전체 목록으로 돌아가기
         </button>
       </div>
 
@@ -279,4 +194,94 @@ export default function GymDetail() {
       )}
     </>
   );
-}
+};
+
+const styles = {
+  wrapper: { maxWidth: "480px", margin: "0 auto", padding: "20px" },
+  header: { display: "flex", alignItems: "center", marginBottom: "20px" },
+  headerTitle: { fontSize: "18px", fontWeight: "700", marginLeft: "10px" },
+  backBtn: {
+    border: "none",
+    background: "none",
+    fontSize: "22px",
+    cursor: "pointer",
+  },
+  card: {
+    borderRadius: "24px",
+    overflow: "hidden",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+    border: "1px solid #f1f1f5",
+    paddingBottom: "24px",
+  },
+  imageContainer: {
+    width: "100%",
+    height: "250px",
+    position: "relative",
+    backgroundColor: "#f8f9fa",
+  },
+  mainImage: { width: "100%", height: "100%", objectFit: "cover" },
+  imageBadge: {
+    position: "absolute",
+    top: "16px",
+    left: "16px",
+    backgroundColor: "#7c5dfa",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "8px",
+    fontSize: "12px",
+    fontWeight: "800",
+  },
+  title: { fontSize: "22px", fontWeight: "800", margin: "24px 20px 8px 20px" },
+  address: { fontSize: "14px", color: "#888", margin: "0 20px 24px 20px" },
+  infoGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "12px",
+    padding: "0 20px",
+    marginBottom: "30px",
+  },
+  infoItem: {
+    backgroundColor: "#f8f9fa",
+    padding: "12px",
+    borderRadius: "14px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  infoLabel: { fontSize: "11px", color: "#adb5bd", fontWeight: "600" },
+  infoValue: { fontSize: "13px", color: "#495057", fontWeight: "700" },
+  promotionWrap: { padding: "0 20px 24px 20px" },
+  btnGroup: { display: "flex", gap: "10px", padding: "0 20px" },
+  favBtn: {
+    flex: 2,
+    borderRadius: "14px",
+    padding: "14px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+  listBtn: {
+    flex: 1,
+    border: "1px solid #7c5dfa",
+    background: "#fff",
+    color: "#7c5dfa",
+    borderRadius: "14px",
+    padding: "14px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  bottomBackBtn: {
+    width: "100%",
+    marginTop: "24px",
+    padding: "16px",
+    border: "1px solid #e9ecef",
+    borderRadius: "14px",
+    background: "white",
+    color: "#868e96",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+};
+
+export default GymDetail;

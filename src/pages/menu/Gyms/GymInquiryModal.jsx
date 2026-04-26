@@ -53,8 +53,8 @@ export default function GymInquiryModal({
               혜택 문의가 접수되었어요
             </h3>
             <p className="gym-inquiry-modal__copy">
-              {userName}님 번호로 {gymName} 상담이 이어질 수 있도록 전달 준비를
-              마쳤습니다.
+              {userName}님 번호로 {gymName} 상담이 이어질 수 있도록 전달
+              준비를 마쳤습니다.
             </p>
             <div className="gym-inquiry-modal__summary">
               <span>이름 {userName}</span>
@@ -85,7 +85,7 @@ export default function GymInquiryModal({
               {promotion.title}
             </h3>
             <p className="gym-inquiry-modal__copy">
-              저장된 이름은 자동으로 입력했고, 연락받을 전화번호만 남겨주시면
+              저장된 이름은 자동으로 입력되고, 연락받을 전화번호만 남겨주시면
               됩니다.
             </p>
 

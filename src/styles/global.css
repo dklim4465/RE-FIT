@@ -269,7 +269,7 @@ button {
   grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.14fr);
   gap: 22px;
   align-items: stretch;
-  height: clamp(560px, 66vh, 640px);
+  height:  630px;
 }
 
 .home-map-area,
@@ -284,7 +284,7 @@ button {
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px);
   overflow: hidden;
-  min-height: 630px;
+  min-height: 650px;
 }
 
 .home-map-area,
@@ -320,7 +320,7 @@ button {
 }
 
 .home-map-embed .naver-map-board {
-  height: clamp(200px, 42vh, 300px);
+  height: clamp(260px, 34vh, 310px);
   max-height: none;
   margin-top: 0;
 }
@@ -330,7 +330,7 @@ button {
 }
 
 .home-map-embed .nearby-gyms-section {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .home-map-area > a {
@@ -701,7 +701,7 @@ button {
 .page-placeholder h1,
 .page-placeholder h2,
 .page-placeholder h3 {
-  margin: 0;
+  margin: 0px;
   color: var(--ink-strong);
 }
 
@@ -1409,7 +1409,7 @@ button {
 }
 
 .nearby-gyms-section {
-  margin-top: 20px;
+  margin-top: 3px;
   display: grid;
   gap: 12px;
 }

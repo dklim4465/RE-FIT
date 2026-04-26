@@ -1,6 +1,5 @@
 import React from "react";
 
-// div 태그가 나오는 이곳은 광고용 컴포넌트
 export default function GymPromotionCard({ promotion, onInquiryClick }) {
   return (
     <aside
@@ -9,6 +8,7 @@ export default function GymPromotionCard({ promotion, onInquiryClick }) {
     >
       <div className="gym-detail-promo__eyebrow">
         <span className="gym-detail-promo__partner">광고</span>
+        <span>{promotion.badge}</span>
       </div>
 
       <h3 className="gym-detail-promo__title">{promotion.title}</h3>
@@ -30,7 +30,7 @@ export default function GymPromotionCard({ promotion, onInquiryClick }) {
           혜택 문의하기
         </button>
         <span className="gym-detail-promo__meta">
-          혜택은 내부 운영 정책에 따라 달라질 수 있습니다.
+          혜택은 지점 운영 정책에 따라 달라질 수 있습니다.
         </span>
       </div>
     </aside>
