@@ -8,7 +8,7 @@ export default function RoutineList() {
     <div className="page" style={styles.container}>
       {/* 헤더를 더 아래로 내리고 목록과 가깝게 배치 */}
       <div className="list-header" style={styles.header}>
-        <h2 style={styles.headerTitle}>나의 운동 기록({routines.length})</h2>
+        <h2 style={styles.headerTitle}>운동 기록({routines.length})</h2>
 
         {/* <button style={styles.createBtn} onClick={() => navigate("create")}> */}
         {/* + 새 루틴 만들기</button> 중복이라서 주석처리해두었습니다.*/}
@@ -58,7 +58,7 @@ const styles = {
     alignItems: "center",
     width: "100%",
     // 상단 여백을 주어 전체적으로 화면을 아래로 내림
-    paddingTop: "100px",
+    paddingTop: "10px",
   },
   header: {
     display: "flex",

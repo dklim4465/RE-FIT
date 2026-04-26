@@ -1,16 +1,15 @@
 import React, { memo } from "react";
 
-const GymItem = memo(({ gym, onSelect }) => {
+const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
   if (!gym) return null;
-  const { id, name, address } = gym;
+  const { id, name, address, imageUrl, isDiscount } = gym;
 
-  // 이미지가 없을 때 보여줄 기본 로고 이미지
-  const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name.charAt(0))}&background=7c5dfa&color=fff&size=128&bold=true`;
-  const thumbnailSrc = gym.imageUrl || defaultImage;
+  // [수정] 헬스장, 덤벨 키워드에 최적화된 고정 랜덤 이미지
+  // picsum 대신 더 정확한 운동 관련 소스를 사용합니다.
+  const gymFallback = `https://loremflickr.com/300/300/gym,dumbbell,workout/all?lock=${id}`;
 
   return (
     <div
-      onClick={() => onSelect?.(id)}
       style={{
         padding: "20px",
         borderBottom: "1px solid #f1f1f1",
@@ -21,32 +20,52 @@ const GymItem = memo(({ gym, onSelect }) => {
         gap: "16px",
       }}
     >
-      {/* 1. 왼쪽: 텍스트 정보 (제목 & 주소) */}
       <div style={{ flex: 1, textAlign: "left" }}>
-        <strong
+        <div
           style={{
-            fontSize: "20px",
-            fontWeight: "700",
-            color: "#2f2a26",
-            display: "block",
-            marginBottom: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "8px",
           }}
         >
-          {name}
-        </strong>
+          <strong
+            style={{ fontSize: "18px", fontWeight: "700", color: "#2f2a26" }}
+          >
+            {name}
+          </strong>
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.(gym);
+            }}
+            style={{ cursor: "pointer", fontSize: "18px" }}
+          >
+            {isFavorite ? "❤️" : "🤍"}
+          </span>
+        </div>
         <p
           style={{
             margin: 0,
             color: "#7a746d",
-            fontSize: "14px",
+            fontSize: "13px",
             lineHeight: "1.4",
           }}
         >
           📍 {address}
         </p>
+        <div
+          style={{
+            marginTop: "8px",
+            fontSize: "12px",
+            color: "#7c5dfa",
+            fontWeight: "600",
+          }}
+        >
+          ⭐ {gym.rating || "4.5"} · 📏 {gym.distance}km
+        </div>
       </div>
 
-      {/* 2. 오른쪽: 이미지 영역 (할인 스티커 포함) */}
       <div
         style={{
           width: "100px",
@@ -56,7 +75,7 @@ const GymItem = memo(({ gym, onSelect }) => {
         }}
       >
         <img
-          src={thumbnailSrc}
+          src={imageUrl}
           alt={name}
           style={{
             width: "100%",
@@ -64,37 +83,32 @@ const GymItem = memo(({ gym, onSelect }) => {
             borderRadius: "16px",
             objectFit: "cover",
             backgroundColor: "#f5f5f5",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
           }}
           onError={(e) => {
-            e.target.src = defaultImage;
+            e.target.onerror = null;
+            // 덤벨, 헬스장 전용 이미지로 강제 교체
+            e.target.src = gymFallback;
           }}
         />
-
-        {/* 할인 스티커: 이미지 우측 상단에 겹치기 */}
-        {gym.isDiscount && (
-          <div
-            style={{
-              position: "absolute",
-              top: "-5px",
-              right: "-5px",
-              background: "linear-gradient(135deg, #ff4d4d 0%, #d32f2f 100%)",
-              color: "#fff",
-              padding: "5px 8px",
-              borderRadius: "8px",
-              fontSize: "11px",
-              fontWeight: "900",
-              boxShadow: "0 4px 8px rgba(211, 47, 47, 0.4)",
-              zIndex: 1,
-              border: "2px solid #fff",
-            }}
-          >
-            EVENT !
-          </div>
-        )}
+        {isDiscount && <div style={badgeStyle}>EVENT !</div>}
       </div>
     </div>
   );
 });
+
+const badgeStyle = {
+  position: "absolute",
+  top: "-5px",
+  right: "-5px",
+  background: "linear-gradient(135deg, #ff4d4d 0%, #d32f2f 100%)",
+  color: "#fff",
+  padding: "4px 7px",
+  borderRadius: "8px",
+  fontSize: "10px",
+  fontWeight: "900",
+  boxShadow: "0 4px 8px rgba(211, 47, 47, 0.4)",
+  zIndex: 1,
+  border: "2px solid #fff",
+};
 
 export default GymItem;
