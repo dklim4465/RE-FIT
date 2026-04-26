@@ -4,10 +4,13 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
   if (!gym) return null;
   const { id, name, address, imageUrl, isDiscount } = gym;
 
-  // 1. 실제 사진 데이터가 없을 때 보여줄 기본 헬스장 이미지 (글씨 로고 대체)
+  // 1. 실제 사진 데이터가 없거나 서버 에러(500) 발생 시 보여줄 고퀄리티 기본 이미지
   const defaultImage =
-    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=300&auto=format&fit=crop";
-  const thumbnailSrc = imageUrl || defaultImage;
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop";
+
+  // 2. imageUrl이 null이거나 빈 문자열인 경우 우선 defaultImage를 할당
+  const thumbnailSrc =
+    imageUrl && imageUrl.trim() !== "" ? imageUrl : defaultImage;
 
   return (
     <div
@@ -36,7 +39,6 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
           >
             {name}
           </strong>
-          {/* 리스트 내 찜 버튼 (클릭 시 상세페이지 이동 방지 처리) */}
           <span
             onClick={(e) => {
               e.stopPropagation();
@@ -90,6 +92,8 @@ const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
             boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
           }}
           onError={(e) => {
+            // [중요] 콘솔의 500 에러처럼 서버에서 이미지를 못 줄 경우 여기서 교체됩니다.
+            e.target.onerror = null; // 무한 루프 방지
             e.target.src = defaultImage;
           }}
         />

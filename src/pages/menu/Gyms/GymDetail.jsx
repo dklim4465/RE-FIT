@@ -34,10 +34,9 @@ const GymDetail = () => {
     );
   }
 
-  // 이미지가 없을 때 사용할 기본 이미지
+  // [중요] 데이터의 이미지가 깨졌을 때(500 에러 등) 보여줄 고화질 헬스장 이미지
   const defaultGymImg =
     "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop";
-  const displayImage = gym.imageUrl || defaultGymImg;
 
   return (
     <div style={styles.wrapper}>
@@ -51,9 +50,18 @@ const GymDetail = () => {
       </div>
 
       <div style={styles.card}>
-        {/* 1. 이미지 영역 (네이버 링크 대신 추가) */}
+        {/* 1. 이미지 영역 (onError 로직 추가) */}
         <div style={styles.imageContainer}>
-          <img src={displayImage} alt={gym.name} style={styles.mainImage} />
+          <img
+            src={gym.imageUrl || defaultGymImg}
+            alt={gym.name}
+            style={styles.mainImage}
+            onError={(e) => {
+              // 브라우저 콘솔에서 본 500 에러가 발생하면 이 코드가 작동합니다.
+              e.target.onerror = null;
+              e.target.src = defaultGymImg;
+            }}
+          />
           {gym.isDiscount && <span style={styles.imageBadge}>EVENT</span>}
         </div>
 
@@ -95,7 +103,7 @@ const GymDetail = () => {
               border: isFavorite ? "1px solid #ffc9c9" : "1px solid #e9ecef",
             }}
           >
-            {isFavorite ? "❤️ 찜한 헬스장" : "🤍 찜하기"}
+            {isFavorite ? "❤️ 찜" : "🤍 찜"}
           </button>
 
           {isFavorite && (
@@ -179,7 +187,7 @@ const styles = {
   },
   infoGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr", // 2열 배치
+    gridTemplateColumns: "1fr 1fr",
     gap: "12px",
     padding: "0 20px",
     marginBottom: "30px",
