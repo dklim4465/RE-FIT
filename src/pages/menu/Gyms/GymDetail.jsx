@@ -9,12 +9,8 @@ const GymDetail = () => {
   const { favoriteGymIds, toggleFavorite, rememberFavoriteGym } =
     useGymFavorites();
 
-  // ---------------------------------------------------------
-  // 수정 성동구 데이터 매칭 로직 개선
-  // state에 gym 데이터가 있으면 최우선으로 사용합니다.
-  // ---------------------------------------------------------
+  // state에 gym 데이터가 있으면 최우선으로 사용
   const gym = location.state?.gym;
-
   const isFavorite = gym ? favoriteGymIds.includes(String(gym.id)) : false;
 
   useEffect(() => {
@@ -27,160 +23,219 @@ const GymDetail = () => {
     navigate("/gyms", { state: { showFavorites: true } });
   };
 
-  // gym 데이터가 아예 없을 때만 예외 처리
   if (!gym) {
     return (
       <div style={{ padding: "50px", textAlign: "center" }}>
         <h3>정보를 불러오는 중입니다...</h3>
-        <p style={{ color: "#666" }}>
-          잠시만 기다려주시거나 목록에서 다시 선택해주세요.
-        </p>
-        <button onClick={() => navigate("/gyms")}>목록으로 돌아가기</button>
+        <button onClick={() => navigate("/gyms")} style={styles.bottomBackBtn}>
+          목록으로 돌아가기
+        </button>
       </div>
     );
   }
 
-  const getNaverSearchUrl = (name, addr) => {
-    const addressTokens = (addr || "").trim().split(/\s+/);
-    const district = addressTokens.find((token) => token.endsWith("구")) || "";
-    const query = [district, name].filter(Boolean).join(" ");
-    return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
-  };
+  // 이미지가 없을 때 사용할 기본 이미지
+  const defaultGymImg =
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop";
+  const displayImage = gym.imageUrl || defaultGymImg;
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-      -
-      <div
-        style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}
-      >
+    <div style={styles.wrapper}>
+      {/* 헤더 영역 */}
+      <div style={styles.header}>
         <button onClick={() => navigate(-1)} style={styles.backBtn}>
           {" "}
           ←{" "}
         </button>
-        <h2 style={{ marginLeft: "10px" }}>헬스장 상세정보</h2>
+        <h2 style={styles.headerTitle}>상세 정보</h2>
       </div>
-      <div style={styles.card}>
-        <h1 style={{ fontSize: "24px", marginBottom: "10px" }}>{gym.name}</h1>
-        <p style={{ color: "#666", marginBottom: "20px" }}>📍 {gym.address}</p>
 
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      <div style={styles.card}>
+        {/* 1. 이미지 영역 (네이버 링크 대신 추가) */}
+        <div style={styles.imageContainer}>
+          <img src={displayImage} alt={gym.name} style={styles.mainImage} />
+          {gym.isDiscount && <span style={styles.imageBadge}>EVENT</span>}
+        </div>
+
+        {/* 2. 제목 및 주소 */}
+        <h1 style={styles.title}>{gym.name}</h1>
+        <p style={styles.address}>📍 {gym.address}</p>
+
+        {/* 3. 정보 그리드 (거리 & 전화번호 2열 배치) */}
+        <div style={styles.infoGrid}>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>거리</span>
+            <span style={styles.infoValue}>📏 {gym.distance}km</span>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>문의처</span>
+            <span style={styles.infoValue}>
+              📞 {gym.phone || "02-123-4567"}
+            </span>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>별점</span>
+            <span style={styles.infoValue}>⭐️ {gym.rating || "4.5"}</span>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>운영시간</span>
+            <span style={styles.infoValue}>⏰ 06:00 ~ 24:00</span>
+          </div>
+        </div>
+
+        {/* 4. 버튼 영역 */}
+        <div style={styles.btnGroup}>
           <button
             type="button"
             onClick={() => toggleFavorite(gym)}
             style={{
               ...styles.favBtn,
-              background: isFavorite ? "#ffe3e3" : "#f5f5f5",
-              color: isFavorite ? "#e03131" : "#777",
+              background: isFavorite ? "#ffe3e3" : "#f8f9fa",
+              color: isFavorite ? "#e03131" : "#adb5bd",
+              border: isFavorite ? "1px solid #ffc9c9" : "1px solid #e9ecef",
             }}
           >
-            {isFavorite ? "♥ 찜" : "♡ 찜"}
+            {isFavorite ? "❤️ 찜한 헬스장" : "🤍 찜하기"}
           </button>
 
           {isFavorite && (
             <button onClick={goToFavoriteList} style={styles.listBtn}>
-              {" "}
-              목록 확인{" "}
+              목록 확인
             </button>
           )}
         </div>
-
-        <div style={styles.infoRow}>
-          <span>📏 {gym.distance}km</span>
-          <span>⭐️ {gym.rating || "4.5"}</span>
-        </div>
-
-        <div style={styles.naverBox}>
-          <p style={styles.naverText}>
-            현재 업체에서 제공하는 <br />
-            <strong>시설, 전화번호, 이벤트</strong>는 <br />
-            네이버에서 정확하게 확인 가능합니다.
-          </p>
-          <a
-            href={getNaverSearchUrl(gym.name, gym.address)}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.naverLink}
-          >
-            N 네이버 정보 보기
-          </a>
-        </div>
       </div>
+
       <button onClick={() => navigate("/gyms")} style={styles.bottomBackBtn}>
-        목록으로 돌아가기
+        전체 목록으로 돌아가기
       </button>
     </div>
   );
 };
 
 const styles = {
+  wrapper: {
+    maxWidth: "480px",
+    margin: "0 auto",
+    padding: "20px",
+    backgroundColor: "#fff",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "20px",
+  },
+  headerTitle: {
+    fontSize: "18px",
+    fontWeight: "700",
+    marginLeft: "10px",
+  },
   backBtn: {
     border: "none",
     background: "none",
-    fontSize: "20px",
+    fontSize: "22px",
     cursor: "pointer",
+    padding: "0",
   },
   card: {
-    border: "1px solid #ddd",
-    borderRadius: "15px",
-    padding: "25px",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+    borderRadius: "24px",
+    overflow: "hidden",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+    border: "1px solid #f1f1f5",
+    paddingBottom: "24px",
+  },
+  imageContainer: {
+    width: "100%",
+    height: "250px",
+    position: "relative",
+    backgroundColor: "#f8f9fa",
+  },
+  mainImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  imageBadge: {
+    position: "absolute",
+    top: "16px",
+    left: "16px",
+    backgroundColor: "#7c5dfa",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "8px",
+    fontSize: "12px",
+    fontWeight: "800",
+  },
+  title: {
+    fontSize: "22px",
+    fontWeight: "800",
+    margin: "24px 20px 8px 20px",
+    color: "#1a1a1a",
+  },
+  address: {
+    fontSize: "14px",
+    color: "#888",
+    margin: "0 20px 24px 20px",
+  },
+  infoGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr", // 2열 배치
+    gap: "12px",
+    padding: "0 20px",
+    marginBottom: "30px",
+  },
+  infoItem: {
+    backgroundColor: "#f8f9fa",
+    padding: "12px",
+    borderRadius: "14px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  infoLabel: {
+    fontSize: "11px",
+    color: "#adb5bd",
+    fontWeight: "600",
+  },
+  infoValue: {
+    fontSize: "13px",
+    color: "#495057",
+    fontWeight: "700",
+  },
+  btnGroup: {
+    display: "flex",
+    gap: "10px",
+    padding: "0 20px",
   },
   favBtn: {
     flex: 2,
-    border: "none",
-    borderRadius: "999px",
-    padding: "12px 14px",
-    fontSize: "14px",
+    borderRadius: "14px",
+    padding: "14px",
+    fontSize: "15px",
     fontWeight: "700",
     cursor: "pointer",
+    transition: "all 0.2s",
   },
   listBtn: {
     flex: 1,
     border: "1px solid #7c5dfa",
     background: "#fff",
     color: "#7c5dfa",
-    borderRadius: "999px",
-    padding: "10px 14px",
-    fontSize: "12px",
+    borderRadius: "14px",
+    padding: "14px",
+    fontSize: "13px",
     fontWeight: "600",
     cursor: "pointer",
   },
-  infoRow: {
-    display: "flex",
-    gap: "15px",
-    fontSize: "14px",
-    color: "#444",
-    marginBottom: "30px",
-  },
-  naverBox: {
-    backgroundColor: "#f1f3f5",
-    padding: "20px",
-    borderRadius: "10px",
-    textAlign: "center",
-  },
-  naverText: {
-    fontSize: "14px",
-    color: "#666",
-    marginBottom: "15px",
-    lineHeight: "1.5",
-  },
-  naverLink: {
-    display: "block",
-    backgroundColor: "#03C75A",
-    color: "white",
-    padding: "12px",
-    borderRadius: "8px",
-    textDecoration: "none",
-    fontWeight: "bold",
-    fontSize: "15px",
-  },
   bottomBackBtn: {
     width: "100%",
-    marginTop: "20px",
-    padding: "12px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
+    marginTop: "24px",
+    padding: "16px",
+    border: "1px solid #e9ecef",
+    borderRadius: "14px",
     background: "white",
+    color: "#868e96",
+    fontWeight: "600",
     cursor: "pointer",
   },
 };

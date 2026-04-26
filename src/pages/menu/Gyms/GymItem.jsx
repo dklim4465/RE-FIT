@@ -1,16 +1,16 @@
 import React, { memo } from "react";
 
-const GymItem = memo(({ gym, onSelect }) => {
+const GymItem = memo(({ gym, isFavorite, onToggleFavorite }) => {
   if (!gym) return null;
-  const { id, name, address } = gym;
+  const { id, name, address, imageUrl, isDiscount } = gym;
 
-  // 이미지가 없을 때 보여줄 기본 로고 이미지
-  const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name.charAt(0))}&background=7c5dfa&color=fff&size=128&bold=true`;
-  const thumbnailSrc = gym.imageUrl || defaultImage;
+  // 1. 실제 사진 데이터가 없을 때 보여줄 기본 헬스장 이미지 (글씨 로고 대체)
+  const defaultImage =
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=300&auto=format&fit=crop";
+  const thumbnailSrc = imageUrl || defaultImage;
 
   return (
     <div
-      onClick={() => onSelect?.(id)}
       style={{
         padding: "20px",
         borderBottom: "1px solid #f1f1f1",
@@ -21,32 +21,55 @@ const GymItem = memo(({ gym, onSelect }) => {
         gap: "16px",
       }}
     >
-      {/* 1. 왼쪽: 텍스트 정보 (제목 & 주소) */}
+      {/* 왼쪽: 텍스트 정보 */}
       <div style={{ flex: 1, textAlign: "left" }}>
-        <strong
+        <div
           style={{
-            fontSize: "20px",
-            fontWeight: "700",
-            color: "#2f2a26",
-            display: "block",
-            marginBottom: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "8px",
           }}
         >
-          {name}
-        </strong>
+          <strong
+            style={{ fontSize: "18px", fontWeight: "700", color: "#2f2a26" }}
+          >
+            {name}
+          </strong>
+          {/* 리스트 내 찜 버튼 (클릭 시 상세페이지 이동 방지 처리) */}
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite?.(gym);
+            }}
+            style={{ cursor: "pointer", fontSize: "18px" }}
+          >
+            {isFavorite ? "❤️" : "🤍"}
+          </span>
+        </div>
         <p
           style={{
             margin: 0,
             color: "#7a746d",
-            fontSize: "14px",
+            fontSize: "13px",
             lineHeight: "1.4",
           }}
         >
           📍 {address}
         </p>
+        <div
+          style={{
+            marginTop: "8px",
+            fontSize: "12px",
+            color: "#7c5dfa",
+            fontWeight: "600",
+          }}
+        >
+          ⭐ {gym.rating || "4.5"} · 📏 {gym.distance}km
+        </div>
       </div>
 
-      {/* 2. 오른쪽: 이미지 영역 (할인 스티커 포함) */}
+      {/* 오른쪽: 이미지 및 할인 배지 */}
       <div
         style={{
           width: "100px",
@@ -70,31 +93,25 @@ const GymItem = memo(({ gym, onSelect }) => {
             e.target.src = defaultImage;
           }}
         />
-
-        {/* 할인 스티커: 이미지 우측 상단에 겹치기 */}
-        {gym.isDiscount && (
-          <div
-            style={{
-              position: "absolute",
-              top: "-5px",
-              right: "-5px",
-              background: "linear-gradient(135deg, #ff4d4d 0%, #d32f2f 100%)",
-              color: "#fff",
-              padding: "5px 8px",
-              borderRadius: "8px",
-              fontSize: "11px",
-              fontWeight: "900",
-              boxShadow: "0 4px 8px rgba(211, 47, 47, 0.4)",
-              zIndex: 1,
-              border: "2px solid #fff",
-            }}
-          >
-            EVENT !
-          </div>
-        )}
+        {isDiscount && <div style={badgeStyle}>EVENT !</div>}
       </div>
     </div>
   );
 });
+
+const badgeStyle = {
+  position: "absolute",
+  top: "-5px",
+  right: "-5px",
+  background: "linear-gradient(135deg, #ff4d4d 0%, #d32f2f 100%)",
+  color: "#fff",
+  padding: "4px 7px",
+  borderRadius: "8px",
+  fontSize: "10px",
+  fontWeight: "900",
+  boxShadow: "0 4px 8px rgba(211, 47, 47, 0.4)",
+  zIndex: 1,
+  border: "2px solid #fff",
+};
 
 export default GymItem;
