@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 const STORAGE_KEY = "community-posts";
+const SEED_VERSION_KEY = "community-posts-seed-version";
+const SEED_VERSION = "dummy-posts-2026-04-27";
 const POSTS_PER_PAGE = 10;
-
-export const generateDummyPosts = (count = 30) => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: Date.now() + i,
-    title: randomItem(TITLES),
-    content: randomItem(CONTENTS),
-    date: randomDate(),
-    likes: Math.floor(Math.random() * 20),
-    author: randomItem(NICKNAMES),
-  }));
-};
 
 const TITLES = [
   "헬스장 처음 가는데 뭐부터 해야함?",
@@ -62,6 +53,17 @@ const randomDate = () => {
   return date.toLocaleDateString("ko-KR");
 };
 
+export const generateDummyPosts = (count = 30) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: Date.now() + i,
+    title: randomItem(TITLES),
+    content: randomItem(CONTENTS),
+    date: randomDate(),
+    likes: Math.floor(Math.random() * 20),
+    author: randomItem(NICKNAMES),
+  }));
+};
+
 const DUMMY_POSTS = generateDummyPosts(30);
 
 export default function CommunityListPage() {
@@ -81,20 +83,22 @@ export default function CommunityListPage() {
   useEffect(() => {
     try {
       const savedPosts = localStorage.getItem(STORAGE_KEY);
-      if (savedPosts) {
+      const savedSeedVersion = localStorage.getItem(SEED_VERSION_KEY);
+
+      if (savedPosts && savedSeedVersion === SEED_VERSION) {
         setPosts(JSON.parse(savedPosts));
       } else {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(DUMMY_POSTS));
+        localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
         setPosts(DUMMY_POSTS);
       }
     } catch (error) {
       console.error("게시글을 불러오는 중 오류가 발생했습니다.", error);
+      setPosts(DUMMY_POSTS);
     } finally {
       setLoading(false);
     }
   }, []);
-
-  localStorage.removeItem("community-posts");
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -104,6 +108,7 @@ export default function CommunityListPage() {
 
   const savePosts = (nextPosts) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPosts));
+    localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
     setPosts(nextPosts);
   };
 
@@ -137,6 +142,7 @@ export default function CommunityListPage() {
           content: content.trim(),
           date: now,
           likes: 0,
+          author: "익명",
         },
         ...posts,
       ];
@@ -166,39 +172,48 @@ export default function CommunityListPage() {
   };
 
   if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: 40 }}>불러오는 중...</div>
-    );
+    return <div>불러오는 중...</div>;
   }
 
+  const btn = {
+    padding: "8px 12px",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "bold",
+  };
+
   return (
-    <div style={{ width: "600px", margin: "0 auto", padding: "24px 0" }}>
+    <div style={{ width: "600px", margin: "0 auto", padding: 20 }}>
       <h2>운동 커뮤니티 게시판</h2>
 
       <input
         placeholder="제목"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={{ width: "100%", marginBottom: "8px", padding: "10px" }}
+        style={{ width: "100%", marginBottom: 8, padding: 8 }}
       />
 
       <textarea
         placeholder="내용"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        style={{
-          width: "100%",
-          height: "120px",
-          marginBottom: "8px",
-          padding: "10px",
-        }}
+        style={{ width: "100%", height: 100, padding: 8 }}
       />
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-        <button onClick={handleSubmit}>
+      <div style={{ marginBottom: 20 }}>
+        <button
+          onClick={handleSubmit}
+          style={{ ...btn, background: "#6c63ff", color: "#fff" }}
+        >
           {editId ? "수정하기" : "작성하기"}
         </button>
-        {editId && <button onClick={resetForm}>취소</button>}
+
+        {editId && (
+          <button onClick={resetForm} style={{ ...btn, marginLeft: 8 }}>
+            취소
+          </button>
+        )}
       </div>
 
       <hr />
@@ -211,29 +226,45 @@ export default function CommunityListPage() {
             key={post.id}
             style={{
               border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "16px",
-              marginBottom: "12px",
+              padding: 16,
+              borderRadius: 10,
+              marginBottom: 10,
+              background: "#fff",
             }}
           >
-            <h3 style={{ marginBottom: "8px" }}>{post.title}</h3>
+            <h3>{post.title}</h3>
 
             {post.date && (
-              <p style={{ marginBottom: "8px", color: "#666" }}>{post.date}</p>
+              <p style={{ color: "#888" }}>{post.date}</p>
             )}
             <p style={{ color: "#888", fontSize: "14px", marginBottom: "4px" }}>
-              작성자:{post.author}
+              작성자: {post.author || "익명"}
             </p>
             <p style={{ whiteSpace: "pre-wrap", marginBottom: "12px" }}>
               {post.content}
             </p>
 
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <button onClick={() => handleLike(post.id)}>
-                좋아요 {post.likes || 0}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => handleLike(post.id)}
+                style={{ ...btn, background: "#eee" }}
+              >
+                👍 {post.likes || 0}
               </button>
-              <button onClick={() => handleEdit(post)}>수정</button>
-              <button onClick={() => handleDelete(post.id)}>삭제</button>
+
+              <button
+                onClick={() => handleEdit(post)}
+                style={{ ...btn, background: "#6c63ff", color: "#fff" }}
+              >
+                수정
+              </button>
+
+              <button
+                onClick={() => handleDelete(post.id)}
+                style={{ ...btn, background: "red", color: "#fff" }}
+              >
+                삭제
+              </button>
             </div>
           </div>
         ))
@@ -246,6 +277,7 @@ export default function CommunityListPage() {
               key={index}
               onClick={() => setCurrentPage(index + 1)}
               style={{
+                ...btn,
                 fontWeight: currentPage === index + 1 ? "bold" : "normal",
               }}
             >
