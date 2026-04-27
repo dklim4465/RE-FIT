@@ -12,6 +12,26 @@
 
 ---
 
+### 📦 사용 라이브러리 및 버전 (Dependencies)
+
+| 분류 | 라이브러리 (Library) | 버전 (Version) | 용도 |
+| :--- | :--- | :--- | :--- |
+| **Core** | **React** | `^19.2.5` | UI 라이브러리 및 컴포넌트 설계 |
+| | **React DOM** | `^19.2.5` | 웹 브라우저 렌더링 |
+| **State** | **Redux Toolkit** | `^2.11.2` | 효율적인 전역 상태 관리 |
+| | **React Redux** | `^9.2.0` | React 컴포넌트-Redux 연결 |
+| | **Redux Devtools** | `^2.13.9` | 상태 변화 디버깅 도구 |
+| **Routing** | **React Router Dom** | `^7.9.4` | SPA 기반 페이지 내비게이션 |
+| **Style** | **Styled Components** | `^6.1.19` | CSS-in-JS 방식의 컴포넌트 스타일링 |
+| | **Sass** | `^1.93.2` | CSS 전처기 활용 정교한 스타일링 |
+| | **Classnames** | `^2.5.1` | 조건부 클래스 결합 최적화 |
+| **Network** | **Axios** | `^1.12.2` | HTTP 클라이언트 통신 |
+| **Data** | **PapaParse** | `^5.5.3` | CSV 데이터 파싱 및 정규화 |
+| **Optimization**| **React Virtualized** | `^9.22.6` | 대규모 리스트 가상 스크롤 최적화 |
+| **Utility** | **React Icons** | `^5.5.0` | 고품질 아이콘 시스템 적용 |
+| | **React Calendar** | `^6.0.1` | 운동 일정 기록용 캘린더 기능 |
+| | **Web Vitals** | `^2.1.0` | 웹 앱 성능 지표 측정 |
+
 ## 🛠 2. 기술 스택 (Tech Stack)
 
 | 분류 | 기술 스택 | 활용 목적 |
