@@ -71,21 +71,45 @@
 ## ⚡ 5. 주요 성능 최적화 상세 (Performance Analysis)
 
 ### 🏎 렌더링 성능 90.4% 개선 (Profiler 측정)
-대규모 헬스장 리스트 탐색 시 발생하는 병목 현상을 해결하기 위해 React Profiler를 도입, 단계별 최적화를 진행했습니다.
+대규모 헬스장 리스트 탐색 시 발생하는 병목 현상을 해결하기 위해 React Profiler를 도입, 총 4단계에 걸친 최적화를 진행했습니다.
 
 | 단계 | 최적화 기법 | 렌더링 소요 시간 | 개선율 |
 | :--- | :--- | :--- | :--- |
 | **Step 1** | 초기 구현 상태 (최적화 전) | **27.2ms** | - |
 | **Step 2** | `React.memo` 적용 | **12.7ms** | **53.3% ↓** |
-| **Step 3** | **가상 스크롤 (`react-window`) 도입** | **2.6ms** | **90.4% ↓** |
+| **Step 3** | **가상 스크롤 도입 (`react-window`)** | **2.6ms** | **90.4% ↓** |
 
-#### [성능 비교 분석 자료]
-| 최적화 전 (27.2ms) | 최적화 후 (2.6ms) |
-| :---: | :---: |
-| ![Before](<img width="1237" height="518" alt="KakaoTalk_20260427_091941875" src="https://github.com/user-attachments/assets/2e4ec1e0-3640-4d48-9ffd-1a078ef27879" />
-) | ![After]<img width="1236" height="441" alt="KakaoTalk_20260427_091949114" src="https://github.com/user-attachments/assets/9e08414a-3e5d-4e87-a977-3ed5ce5ca4be" />
-) |
-> *`React.memo`와 `Virtual Scrolling` 기법을 통해 대량의 DOM 노드 생성을 억제하고 렌더링 효율을 극대화했습니다.*
+---
+
+### 🔍 단계별 성능 분석 지표
+
+#### 1️⃣ 최적화 전 (Step 1) : 27.2ms
+* **현상**: 상태 변경 시 모든 리스트 항목이 불필요하게 재렌더링됨.
+![Step1_초기상태]<img width="1237" height="518" alt="KakaoTalk_20260427_091941875" src="https://github.com/user-attachments/assets/91943992-e59b-4a1d-aa0f-ecb8a66bb5bb" />
+
+
+#### 2️⃣ 메모이제이션 적용 (Step 2) : 12.7ms
+* **해결**: `React.memo`를 통해 Props 변화가 없는 컴포넌트의 렌더링을 차단.
+![Step2_메모적용]<img width="1236" height="441" alt="KakaoTalk_20260427_091949114" src="https://github.com/user-attachments/assets/fc52df57-ae47-4355-b9e8-8e3975dae638" />
+
+
+#### 3️⃣ 가상 스크롤 및 최종 최적화 (Step 3) : 2.6ms
+* **해결**: `react-window`를 활용하여 실제 화면에 보이는 요소만 렌더링하도록 최적화.
+![Step3_가상화적용]<img width="1217" height="548" alt="KakaoTalk_20260427_092017139" src="https://github.com/user-attachments/assets/020d7d60-b3cf-4f2d-9264-879b27fd2f1e" />
+
+
+#### 4️⃣ 리스트 컴포넌트 재사용성 확인
+* **결과**: 메모이제이션이 완벽하게 적용되어 재렌더링 없이 컴포넌트가 재사용되는 구조 확인.
+![Step4_재사용확인]<img width="1402" height="279" alt="KakaoTalk_20260427_092023098" src="https://github.com/user-attachments/assets/4d6d9935-939e-4522-93cc-e6ea5de09533" />
+
+
+---
+
+### 🛠 세부 최적화 및 데이터 전략
+* **연산 부하 제어 (Debounce)**: 검색어 입력 시 발생하는 빈번한 필터링 연산을 지연 처리하여 브라우저 부하를 최적화했습니다.
+* **메모이제이션 (Memoization)**: `useMemo`와 `useCallback`을 통해 데이터 변경이 없는 아이템의 불필요한 연산을 방지했습니다.
+* **가상화 (Virtualization)**: `react-window`를 활용해 뷰포트 영역만 렌더링하여 메모리 점유율을 최소화했습니다.
+* **데이터 무결성 확보**: 외부 소스마다 다른 ID 타입을 정규화하고, `TextDecoder`를 통해 공공데이터의 인코딩 문제를 해결했습니다.
 
 ---
 
