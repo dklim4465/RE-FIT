@@ -10,6 +10,14 @@
 * **사용자 중심 정렬**: 단순 가나다순이 아닌, 사용자가 인지하기 쉬운 '지점 번호' 중심의 논리적 정렬 알고리즘을 구현했습니다.
 * **심리적 접근성 강화**: 찜 기능과 AI 기반의 루틴 추천을 통해 사용자가 운동을 시작하기까지의 심리적 문턱을 낮추고자 했습니다.
 
+## 👥 4. 팀원 소개 및 역할 (Team Members)
+
+| 팀원 | 역할 | 주요 기여 및 기술적 성취 |
+| :--- | :--- | :--- |
+| **대한 (A)** | **Architecture & Base Design** | • **Infra**: 초기 환경 설정 및 `Feature-Branch` 기반 아키텍처 설계<br>• **Base Layout**: 메인 페이지 골격(HTML) 및 전역 CSS 시스템 구축<br>• **Auth**: JWT 기반 로그인 로직 및 `Protected Route` 권한 관리<br>• **AI Core**: AI 엔진 연동을 위한 데이터 정규화 및 Fallback 로직 설계 |
+| **가인 (B)** | **Main UX & Performance** | • **Detail UX**: 메인/목록/상세 페이지의 세부 인터페이스 고도화 및 유저 흐름 설계<br>• **Optimization**: `react-window` 가상 스크롤을 통한 리스트 성능 80% 이상 개선<br>• **Search Logic**: `useDebounce`, `useGymFilter` 등 커스텀 훅을 통한 검색 엔진 구현<br>• **Interactions**: 지도 연동 마커 시스템 및 찜/할인 이벤트 등 실무 기능 구현 |
+| **승진 (C)** | **Feature CRUD & Calendar** | • **Content CRUD**: 운동 루틴 및 커뮤니티 게시판의 전체 CRUD 기능 개발<br>• **Calendar Service**: `react-calendar` 기반의 일정 관리 및 AI 루틴 데이터 자동 연동<br>• **State Management**: 복잡한 루틴 수정/삭제 로직의 상태 관리 최적화 |
+
 ---
 ```JSON
 {
