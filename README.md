@@ -12,23 +12,18 @@
 
 ---
 
-"dependencies": {
-  "react": "^19.2.5",
-  "react-dom": "^19.2.5",
-  "@reduxjs/toolkit": "^2.11.2",
-  "react-redux": "^9.2.0",
-  "redux": "^5.0.1",
-  "react-router-dom": "^7.14.1",
-  "axios": "^1.15.2",
-  "papaparse": "^5.5.3",
-  "react-window": "^2.2.7",
-  "react-calendar": "^6.0.1",
-  "@types/navermaps": "^3.9.1",
-  "sass": "^1.85.0",
-  "styled-components": "^6.1.15",
-  "classnames": "^2.5.1",
-  "react-icons": "^5.5.0",
-  "web-vitals": "^4.2.4"
+{
+ "@reduxjs/toolkit": "^2.11.2",
+    "@types/navermaps": "^3.9.1",
+    "axios": "^1.15.2",
+    "papaparse": "^5.5.3",
+    "react": "^19.2.5",
+    "react-calendar": "^6.0.1",
+    "react-dom": "^19.2.5",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.14.1",
+    "react-window": "^2.2.7",
+    "redux": "^5.0.1"
 }
 
 ## 🛠 2. 기술 스택 (Tech Stack)
