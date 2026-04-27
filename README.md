@@ -51,7 +51,7 @@
 | **State** | **Redux / Context API** | 사용자 인증 상태 및 전역 데이터 흐름 관리 |
 | **Routing** | **React Router Dom** | SPA 구현 및 URL 파라미터 기반 상태 동기화 |
 | **Data** | **PapaParse** | 대규모 CSV 데이터 실시간 파싱 및 정규화 처리 |
-
+| **AI / Map** | **Llama 3 / Kakao Map** | 맞춤형 운동 루틴 생성 및 지도 기반 위치 시각화 |
 
 ---
 
