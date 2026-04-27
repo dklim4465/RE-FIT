@@ -9,13 +9,11 @@ import "./styles/variables.css";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Provider store={store}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </Provider>
-    </BrowserRouter>
-  </React.StrictMode>
+  <BrowserRouter>
+    <Provider store={store}>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </Provider>
+  </BrowserRouter>
 );

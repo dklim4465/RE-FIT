@@ -163,11 +163,23 @@ export default function RoutineForm() {
           onChange={handleChange}
           placeholder="📝 추가 요청사항을 적어주세요"
           style={styles.inputFull}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleGenerate();
+            }
+          }}
         />
       </div>
 
       <button
         onClick={handleGenerate}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleGenerate();
+          }
+        }}
         disabled={isLoading}
         style={isLoading ? styles.btnDisabled : styles.generateBtn}
       >
